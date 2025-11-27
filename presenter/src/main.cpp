@@ -1,8 +1,8 @@
 #include <tracer/core.hpp>
 
-#include <print>
+#include "log.hpp"
 
 auto main() -> int
 {
-    std::println("{}", tracer::test());
+    PT_INFO("{}", tracer::test());
 }
