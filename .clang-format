@@ -1,0 +1,35 @@
+IndentWidth: 4
+IndentPPDirectives: BeforeHash
+PointerAlignment: Left
+SortIncludes: true
+
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterCaseLabel: true
+  AfterClass: true
+  AfterControlStatement: Always
+  AfterEnum: true
+  AfterFunction: true
+  AfterNamespace: false
+  AfterStruct: true
+  AfterUnion: true
+  AfterExternBlock: true
+  BeforeCatch: true
+  BeforeElse: true
+  IndentBraces: false
+  SplitEmptyFunction: false
+
+Cpp11BracedListStyle: false
+AccessModifierOffset: -4
+
+AllowAllArgumentsOnNextLine: false
+BreakBeforeBinaryOperators: NonAssignment
+SpaceAfterTemplateKeyword: false
+AllowBreakBeforeNoexceptSpecifier: Always
+
+AllowShortBlocksOnASingleLine: Empty
+AllowShortFunctionsOnASingleLine: Inline
+
+ColumnLimit: 120
+MaxEmptyLinesToKeep: 1
+InsertNewlineAtEOF: true
