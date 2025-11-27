@@ -6,6 +6,8 @@ project(
     LANGUAGES C CXX
 )
 
+add_subdirectory(libs/spdlog)
+
 add_subdirectory(tracer)
 
 add_subdirectory(presenter)
