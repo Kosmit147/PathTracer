@@ -7,6 +7,7 @@ target_sources(
 
 	PRIVATE
 	    src/common.hpp
+	    src/defer.hpp
 	    src/log.hpp
 	    src/main.cpp
 )

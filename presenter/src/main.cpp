@@ -1,8 +1,8 @@
 #include <GLFW/glfw3.h>
-#include <tracer/core.hpp>
 
 #include <cstdlib>
 
+#include "defer.hpp"
 #include "log.hpp"
 
 namespace {
@@ -24,14 +24,17 @@ auto main() -> int
         return EXIT_FAILURE;
     }
 
+    Defer terminate_glfw{ [] { glfwTerminate(); } };
+
     GLFWwindow* window = glfwCreateWindow(640, 480, "Path Tracer", nullptr, nullptr);
 
     if (!window)
     {
         PT_CRITICAL("Failed to create a window.");
-        glfwTerminate();
         return EXIT_FAILURE;
     }
+
+    Defer destroy_window{ [&] { glfwDestroyWindow(window); } };
 
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1);
@@ -41,9 +44,6 @@ auto main() -> int
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
-
-    glfwDestroyWindow(window);
-    glfwTerminate();
 
     return EXIT_SUCCESS;
 }
