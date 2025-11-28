@@ -6,6 +6,7 @@ project(
     LANGUAGES C CXX
 )
 
+add_subdirectory(libs/glfw)
 add_subdirectory(libs/spdlog)
 
 add_subdirectory(tracer)
