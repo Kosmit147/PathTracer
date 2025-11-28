@@ -1,7 +1,10 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <tracer/core.hpp>
 
 #include <cstdlib>
+#include <mdspan>
+#include <vector>
 
 #include "common.hpp"
 #include "defer.hpp"
@@ -40,7 +43,7 @@ auto main() -> int
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow* window = glfwCreateWindow(window_width, window_height, "Path Tracer", nullptr, nullptr);
+    auto window = glfwCreateWindow(window_width, window_height, "Path Tracer", nullptr, nullptr);
 
     if (!window)
     {
@@ -61,6 +64,14 @@ auto main() -> int
 
     glViewport(0, 0, window_width, window_height);
     glfwSetFramebufferSizeCallback(window, glfw_framebuffer_size_callback);
+
+    static constexpr u32 image_width = 256;
+    static constexpr u32 image_height = 256;
+    static constexpr u32 image_size = image_width * image_height;
+
+    std::vector<tracer::Rgba> image;
+    image.reserve(image_size);
+    tracer::render(std::mdspan{ std::data(image), image_height, image_width });
 
     while (!glfwWindowShouldClose(window))
     {
