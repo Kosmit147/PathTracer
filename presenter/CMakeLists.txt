@@ -6,6 +6,7 @@ target_sources(
 	presenter
 
 	PRIVATE
+	    src/common.hpp
 	    src/log.hpp
 	    src/main.cpp
 )
