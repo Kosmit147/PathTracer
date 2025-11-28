@@ -13,6 +13,7 @@ target_sources(
 		BASE_DIRS
 		    include
 		FILES
+		    include/tracer/common.hpp
 		    include/tracer/core.hpp
 )
 

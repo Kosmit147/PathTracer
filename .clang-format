@@ -5,9 +5,9 @@ SortIncludes: true
 
 IncludeCategories:
   - Regex: 'glad.h'
-    Priority: 1
+    Priority: -2
   - Regex: 'glfw3.h'
-    Priority: 2
+    Priority: -1
 
 BreakBeforeBraces: Custom
 BraceWrapping:
