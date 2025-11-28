@@ -6,6 +6,7 @@ project(
     LANGUAGES C CXX
 )
 
+add_subdirectory(libs/glad)
 add_subdirectory(libs/glfw)
 add_subdirectory(libs/spdlog)
 
