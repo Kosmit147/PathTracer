@@ -6,6 +6,7 @@ target_sources(
 	presenter
 
 	PRIVATE
+	    src/assert.hpp
 	    src/common.hpp
 	    src/defer.hpp
 	    src/log.hpp
