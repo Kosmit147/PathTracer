@@ -1,4 +1,4 @@
-#include "tracer/core.hpp"
+#include "tracer/render.hpp"
 
 #include <glm/vec4.hpp>
 

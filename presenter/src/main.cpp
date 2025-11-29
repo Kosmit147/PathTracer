@@ -1,7 +1,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <glm/vec4.hpp>
-#include <tracer/core.hpp>
+#include <tracer/render.hpp>
 
 #include <cstdlib>
 #include <mdspan>
