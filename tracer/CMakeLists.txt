@@ -14,6 +14,7 @@ target_sources(
 		    include
 		FILES
 		    include/tracer/common.hpp
+		    include/tracer/ray.hpp
 		    include/tracer/render.hpp
 )
 

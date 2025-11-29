@@ -25,4 +25,4 @@ target_link_libraries(presenter PRIVATE glfw)
 target_link_libraries(presenter PRIVATE spdlog::spdlog)
 target_link_libraries(presenter PRIVATE PathTracer::tracer)
 
-add_executable(Renderer::presenter ALIAS presenter)
+add_executable(PathTracer::presenter ALIAS presenter)
