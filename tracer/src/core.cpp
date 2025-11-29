@@ -6,8 +6,8 @@ namespace tracer {
 
 auto render(const std::mdspan<Rgba, std::dextents<usize, 2>>& image) -> void
 {
-    auto height = image.stride(0);
-    auto width = image.stride(1);
+    auto height = image.extent(0);
+    auto width = image.extent(1);
 
     for (usize y = 0; y < height; y++)
     {
