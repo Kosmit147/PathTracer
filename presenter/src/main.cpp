@@ -149,6 +149,9 @@ auto main() -> int
     glViewport(0, 0, window_width, window_height);
     glfwSetFramebufferSizeCallback(window, glfw_framebuffer_size_callback);
 
+    PT_INFO("OpenGL Renderer: {}", reinterpret_cast<const char*>(glGetString(GL_RENDERER)));
+    PT_INFO("OpenGL Version: {}", reinterpret_cast<const char*>(glGetString(GL_VERSION)));
+
     auto vertex_source_data = vertex_shader_source.c_str();
     auto fragment_source_data = fragment_shader_source.c_str();
 
