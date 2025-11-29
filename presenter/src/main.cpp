@@ -94,12 +94,12 @@ void main()
     outColor = texture(image, TexCoords);
 })";
 
-constexpr u32 image_width = 256;
-constexpr u32 image_height = 256;
+constexpr u32 image_width = 1920;
+constexpr u32 image_height = 1080;
 constexpr u32 image_size = image_width * image_height;
 
-constexpr u32 window_width = 1024;
-constexpr u32 window_height = 1024;
+constexpr u32 window_width = 1920;
+constexpr u32 window_height = 1080;
 
 } // namespace
 
