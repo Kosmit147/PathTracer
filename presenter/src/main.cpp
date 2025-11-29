@@ -1,5 +1,6 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <glm/vec4.hpp>
 #include <tracer/core.hpp>
 
 #include <cstdlib>
@@ -181,7 +182,7 @@ auto main() -> int
 
     glUseProgram(shader);
 
-    std::vector<tracer::Rgba> image;
+    std::vector<glm::vec4> image;
     image.reserve(image_size);
     tracer::render(std::mdspan{ std::data(image), image_height, image_width });
 

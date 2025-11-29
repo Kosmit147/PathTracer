@@ -8,6 +8,7 @@ project(
 
 add_subdirectory(libs/glad)
 add_subdirectory(libs/glfw)
+add_subdirectory(libs/glm)
 add_subdirectory(libs/spdlog)
 
 add_subdirectory(tracer)

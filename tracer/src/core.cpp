@@ -1,10 +1,12 @@
 #include "tracer/core.hpp"
 
+#include <glm/vec4.hpp>
+
 #include <mdspan>
 
 namespace tracer {
 
-auto render(const std::mdspan<Rgba, std::dextents<usize, 2>>& image) -> void
+auto render(const std::mdspan<glm::vec4, std::dextents<usize, 2>>& image) -> void
 {
     auto height = image.extent(0);
     auto width = image.extent(1);
@@ -17,7 +19,7 @@ auto render(const std::mdspan<Rgba, std::dextents<usize, 2>>& image) -> void
             auto g = static_cast<float>(y) / static_cast<float>(height - 1);
             auto b = 0.0f;
 
-            image[y, x] = Rgba{ .r = r, .g = g, .b = b, .a = 1.0f };
+            image[y, x] = glm::vec4{ r, g, b, 1.0f };
         }
     }
 }

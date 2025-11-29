@@ -24,4 +24,6 @@ if(PT_WARNING_AS_ERROR)
     set_target_properties(tracer PROPERTIES COMPILE_WARNING_AS_ERROR TRUE)
 endif()
 
+target_link_libraries(tracer PUBLIC glm::glm)
+
 add_library(PathTracer::tracer ALIAS tracer)
