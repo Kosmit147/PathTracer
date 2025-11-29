@@ -189,7 +189,7 @@ auto main() -> int
     image.reserve(image_size);
     tracer::render(std::mdspan{ std::data(image), image_height, image_width }, [](i32 progress) {
         if (progress >= 100)
-            PT_INFO("Progress: Done");
+            PT_INFO("Progress: Done!");
         else
             PT_INFO("Progress: {}%", progress);
     });

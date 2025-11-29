@@ -6,7 +6,7 @@ target_sources(
 	tracer
 
 	PRIVATE
-	    src/core.cpp
+	    src/render.cpp
 
 	PUBLIC
 	    FILE_SET HEADERS
@@ -14,7 +14,7 @@ target_sources(
 		    include
 		FILES
 		    include/tracer/common.hpp
-		    include/tracer/core.hpp
+		    include/tracer/render.hpp
 )
 
 target_compile_features(tracer PUBLIC cxx_std_23)
