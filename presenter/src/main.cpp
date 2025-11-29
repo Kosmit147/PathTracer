@@ -187,7 +187,12 @@ auto main() -> int
 
     std::vector<glm::vec4> image;
     image.reserve(image_size);
-    tracer::render(std::mdspan{ std::data(image), image_height, image_width });
+    tracer::render(std::mdspan{ std::data(image), image_height, image_width }, [](i32 progress) {
+        if (progress >= 100)
+            PT_INFO("Progress: Done");
+        else
+            PT_INFO("Progress: {}%", progress);
+    });
 
     GLuint texture;
     glCreateTextures(GL_TEXTURE_2D, 1, &texture);
