@@ -6,6 +6,7 @@ target_sources(
 	tracer
 
 	PRIVATE
+	    src/object.cpp
 	    src/render.cpp
 
 	PUBLIC
@@ -14,6 +15,7 @@ target_sources(
 		    include
 		FILES
 		    include/tracer/common.hpp
+		    include/tracer/object.hpp
 		    include/tracer/ray.hpp
 		    include/tracer/render.hpp
 )
