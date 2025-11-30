@@ -13,8 +13,24 @@ namespace tracer {
 
 namespace {
 
+[[nodiscard]] auto hit_sphere(const Ray& ray, const glm::dvec3& center, double radius) -> bool
+{
+    auto oc = center - ray.origin();
+
+    // Get the number of roots in a quadratic equation.
+    auto a = glm::dot(ray.direction(), ray.direction());
+    auto b = -2.0 * glm::dot(ray.direction(), oc);
+    auto c = glm::dot(oc, oc) - radius * radius;
+
+    auto discriminant = b * b - 4.0 * a * c;
+    return discriminant >= 0.0;
+}
+
 [[nodiscard]] auto ray_color(const Ray& ray) -> glm::vec4
 {
+    if (hit_sphere(ray, glm::dvec3{ 0.0, 0.0, -1.0 }, 0.5))
+        return glm::dvec4{ 1.0, 0.0, 0.0, 1.0 };
+
     auto ray_direction = ray.direction();
     auto blend = static_cast<float>(ray_direction.y) / 2.0f + 0.5f;
 
