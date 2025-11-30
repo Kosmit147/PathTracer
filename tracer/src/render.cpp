@@ -22,17 +22,17 @@ namespace {
     // Solve a quadratic equation.
 
     auto a = glm::dot(ray.direction(), ray.direction());
-    auto b = -2.0 * glm::dot(ray.direction(), oc);
+    auto h = glm::dot(ray.direction(), oc);
     auto c = glm::dot(oc, oc) - radius * radius;
 
-    auto discriminant = b * b - 4.0 * a * c;
+    auto discriminant = h * h - a * c;
 
     // Return t - how far we need to move along the ray to hit the point on the sphere.
 
     if (discriminant < 0.0)
         return std::nullopt;
     else
-        return (-b - glm::sqrt(discriminant)) / (2.0 * a);
+        return (h - glm::sqrt(discriminant)) / a;
 }
 
 [[nodiscard]] auto ray_color(const Ray& ray) -> glm::vec4
