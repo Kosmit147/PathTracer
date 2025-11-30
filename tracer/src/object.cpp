@@ -39,12 +39,14 @@ auto Sphere::hit(const Ray& ray, double t_min, double t_max) const -> std::optio
     }
 
     auto point = ray.at(t);
-    auto normal = (point - _center) / _radius; // Normalize by dividing by the radius.
+    auto outward_normal = (point - _center) / _radius; // Normalize by dividing by the radius.
+    auto front_face = glm::dot(ray.direction(), outward_normal) < 0.0;
 
     return Hit{
         .point = point,
-        .normal = normal,
+        .normal = front_face ? outward_normal : -outward_normal,
         .t = t,
+        .front_face = front_face,
     };
 }
 
