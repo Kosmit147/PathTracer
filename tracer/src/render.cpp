@@ -1,10 +1,12 @@
 #include "tracer/render.hpp"
 
+#include <glm/exponential.hpp>
 #include <glm/geometric.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 
 #include <mdspan>
+#include <optional>
 
 #include "tracer/common.hpp"
 #include "tracer/ray.hpp"
@@ -13,23 +15,39 @@ namespace tracer {
 
 namespace {
 
-[[nodiscard]] auto hit_sphere(const Ray& ray, const glm::dvec3& center, double radius) -> bool
+[[nodiscard]] auto hit_sphere(const Ray& ray, const glm::dvec3& center, double radius) -> std::optional<double>
 {
-    auto oc = center - ray.origin();
+    const auto oc = center - ray.origin();
 
-    // Get the number of roots in a quadratic equation.
+    // Solve a quadratic equation.
+
     auto a = glm::dot(ray.direction(), ray.direction());
     auto b = -2.0 * glm::dot(ray.direction(), oc);
     auto c = glm::dot(oc, oc) - radius * radius;
 
     auto discriminant = b * b - 4.0 * a * c;
-    return discriminant >= 0.0;
+
+    // Return t - how far we need to move along the ray to hit the point on the sphere.
+
+    if (discriminant < 0.0)
+        return std::nullopt;
+    else
+        return (-b - glm::sqrt(discriminant)) / (2.0 * a);
 }
 
 [[nodiscard]] auto ray_color(const Ray& ray) -> glm::vec4
 {
-    if (hit_sphere(ray, glm::dvec3{ 0.0, 0.0, -1.0 }, 0.5))
-        return glm::dvec4{ 1.0, 0.0, 0.0, 1.0 };
+    const auto sphere_center = glm::dvec3{ 0.0, 0.0, -1.0 };
+    const auto sphere_radius = 0.5;
+
+    if (auto hit = hit_sphere(ray, sphere_center, sphere_radius))
+    {
+        auto t = *hit;
+        auto sphere_normal =
+            glm::vec3{ (ray.at(t) - sphere_center) / sphere_radius }; // Normalize by dividing by the sphere radius.
+        auto normal_color = sphere_normal / 2.0f + 0.5f;
+        return glm::vec4{ normal_color, 1.0f };
+    }
 
     auto ray_direction = ray.direction();
     auto blend = static_cast<float>(ray_direction.y) / 2.0f + 0.5f;
