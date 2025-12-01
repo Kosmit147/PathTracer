@@ -56,7 +56,8 @@ auto render(const std::mdspan<glm::vec4, std::dextents<usize, 2>>& image, Progre
 {
     static const auto world =
         std::array<std::shared_ptr<const Object>, 2>{ std::make_shared<Sphere>(glm::dvec3{ 0.0, 0.0, -1.0 }, 0.5),
-                                                      std::make_shared<Sphere>(glm::dvec3{ 0.0, 0.0, -0.5 }, 0.1) };
+                                                      std::make_shared<Sphere>(glm::dvec3{ 0.0, -100.5, -1.0 },
+                                                                               100.0) };
 
     const auto height = image.extent(0);
     const auto width = image.extent(1);
