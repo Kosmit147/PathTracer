@@ -15,9 +15,11 @@ target_sources(
 		    include
 		FILES
 		    include/tracer/common.hpp
+		    include/tracer/numeric.hpp
 		    include/tracer/object.hpp
 		    include/tracer/ray.hpp
 		    include/tracer/render.hpp
+		    include/tracer/trigonometric.hpp
 )
 
 target_compile_features(tracer PUBLIC cxx_std_23)
