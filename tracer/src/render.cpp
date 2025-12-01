@@ -4,9 +4,13 @@
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 
+#include <array>
 #include <mdspan>
+#include <memory>
+#include <span>
 
 #include "tracer/common.hpp"
+#include "tracer/numeric.hpp"
 #include "tracer/object.hpp"
 #include "tracer/ray.hpp"
 
@@ -14,28 +18,46 @@ namespace tracer {
 
 namespace {
 
-[[nodiscard]] auto ray_color(const Ray& ray) -> glm::vec4
+[[nodiscard]] auto closest_hit(const Ray& ray, double t_min, double t_max,
+                               std::span<const std::shared_ptr<const Object>> objects) -> std::optional<Hit>
 {
-    static constexpr auto sphere = Sphere{ glm::dvec3{ 0.0, 0.0, -1.0 }, 0.5 };
+    auto closest = std::optional<Hit>{ std::nullopt };
 
-    if (auto hit = sphere.hit(ray, 0.0, 100.0))
+    for (auto& object : objects)
+    {
+        if (auto hit = object->hit(ray, t_min, t_max))
+        {
+            closest = hit;
+            t_max = closest->t;
+        }
+    }
+
+    return closest;
+}
+
+[[nodiscard]] auto ray_color(const Ray& ray, std::span<const std::shared_ptr<const Object>> world) -> glm::vec4
+{
+    if (auto hit = closest_hit(ray, 0.0, infinity, world))
     {
         auto normal_color = hit->normal / 2.0 + 0.5;
         return glm::vec4{ normal_color, 1.0f };
     }
 
     auto blend = static_cast<float>(ray.direction().y) / 2.0f + 0.5f;
-
     auto blue = glm::vec3{ 0.5f, 0.7f, 1.0f };
     auto white = glm::vec3{ 1.0f };
-
-    return glm::vec4{ blend * blue + (1 - blend) * white, 1.0f };
+    auto background = blend * blue + (1 - blend) * white;
+    return glm::vec4{ background, 1.0f };
 }
 
 } // namespace
 
 auto render(const std::mdspan<glm::vec4, std::dextents<usize, 2>>& image, ProgressCallback progress_callback) -> void
 {
+    static const auto world =
+        std::array<std::shared_ptr<const Object>, 2>{ std::make_shared<Sphere>(glm::dvec3{ 0.0, 0.0, -1.0 }, 0.5),
+                                                      std::make_shared<Sphere>(glm::dvec3{ 0.0, 0.0, -0.5 }, 0.1) };
+
     const auto height = image.extent(0);
     const auto width = image.extent(1);
 
@@ -67,7 +89,7 @@ auto render(const std::mdspan<glm::vec4, std::dextents<usize, 2>>& image, Progre
             auto ray_direction = glm::normalize(pixel_position - eye);
             auto ray = Ray{ eye, ray_direction };
 
-            image[y, x] = ray_color(ray);
+            image[y, x] = ray_color(ray, world);
         }
     }
 
