@@ -6,6 +6,7 @@ target_sources(
 	tracer
 
 	PRIVATE
+	    src/camera.cpp
 	    src/object.cpp
 	    src/render.cpp
 
@@ -14,6 +15,7 @@ target_sources(
 		BASE_DIRS
 		    include
 		FILES
+		    include/tracer/camera.hpp
 		    include/tracer/common.hpp
 		    include/tracer/numeric.hpp
 		    include/tracer/object.hpp

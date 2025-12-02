@@ -1,10 +1,15 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
+#include <tracer/camera.hpp>
+#include <tracer/object.hpp>
 #include <tracer/render.hpp>
 
+#include <array>
 #include <cstdlib>
 #include <mdspan>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -101,6 +106,11 @@ constexpr u32 image_size = image_width * image_height;
 constexpr u32 window_width = 1920;
 constexpr u32 window_height = 1080;
 
+const auto world = std::array<std::shared_ptr<const tracer::Object>, 2>{
+    std::make_shared<tracer::Sphere>(glm::dvec3{ 0.0, 0.0, -1.0 }, 0.5),
+    std::make_shared<tracer::Sphere>(glm::dvec3{ 0.0, -100.5, -1.0 }, 100.0)
+};
+
 } // namespace
 
 auto main() -> int
@@ -187,12 +197,13 @@ auto main() -> int
 
     std::vector<glm::vec4> image;
     image.reserve(image_size);
-    tracer::render(std::mdspan{ std::data(image), image_height, image_width }, [](i32 progress) {
-        if (progress >= 100)
-            PT_INFO("Progress: Done!");
-        else
-            PT_INFO("Progress: {}%", progress);
-    });
+    tracer::render(tracer::CameraParams{}, std::mdspan{ std::data(image), image_height, image_width }, world,
+                   [](i32 progress) {
+                       if (progress >= 100)
+                           PT_INFO("Progress: Done!");
+                       else
+                           PT_INFO("Progress: {}%", progress);
+                   });
 
     GLuint texture;
     glCreateTextures(GL_TEXTURE_2D, 1, &texture);
