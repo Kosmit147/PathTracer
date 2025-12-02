@@ -8,6 +8,7 @@ target_sources(
 	PRIVATE
 	    src/camera.cpp
 	    src/object.cpp
+		src/random.cpp
 	    src/render.cpp
 
 	PUBLIC
@@ -19,6 +20,7 @@ target_sources(
 		    include/tracer/common.hpp
 		    include/tracer/numeric.hpp
 		    include/tracer/object.hpp
+		    include/tracer/random.hpp
 		    include/tracer/ray.hpp
 		    include/tracer/render.hpp
 		    include/tracer/trigonometric.hpp
