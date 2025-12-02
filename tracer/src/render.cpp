@@ -18,17 +18,17 @@ namespace tracer {
 
 namespace {
 
-[[nodiscard]] auto closest_hit(const Ray& ray, double t_min, double t_max,
-                               std::span<const std::shared_ptr<const Object>> objects) -> std::optional<Hit>
+[[nodiscard]] auto closest_hit(std::span<const std::shared_ptr<const Object>> objects, const Ray& ray,
+                               Interval interval = Interval::non_negative) -> std::optional<Hit>
 {
     auto closest = std::optional<Hit>{ std::nullopt };
 
     for (auto& object : objects)
     {
-        if (auto hit = object->hit(ray, t_min, t_max))
+        if (auto hit = object->hit(ray, interval))
         {
             closest = hit;
-            t_max = closest->t;
+            interval.max = closest->t;
         }
     }
 
@@ -37,7 +37,7 @@ namespace {
 
 [[nodiscard]] auto ray_color(const Ray& ray, std::span<const std::shared_ptr<const Object>> world) -> glm::vec4
 {
-    if (auto hit = closest_hit(ray, 0.0, infinity, world))
+    if (auto hit = closest_hit(world, ray))
     {
         auto normal_color = hit->normal / 2.0 + 0.5;
         return glm::vec4{ normal_color, 1.0f };

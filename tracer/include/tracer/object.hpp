@@ -4,6 +4,7 @@
 
 #include <optional>
 
+#include "tracer/numeric.hpp"
 #include "tracer/ray.hpp"
 
 namespace tracer {
@@ -13,7 +14,8 @@ class Object
 public:
     virtual ~Object() = default;
 
-    [[nodiscard]] virtual auto hit(const Ray& ray, double t_min, double t_max) const -> std::optional<Hit> = 0;
+    [[nodiscard]] virtual auto hit(const Ray& ray, Interval interval = Interval::non_negative) const
+        -> std::optional<Hit> = 0;
 };
 
 class Sphere : public Object
@@ -23,7 +25,8 @@ public:
 
     ~Sphere() override = default;
 
-    [[nodiscard]] auto hit(const Ray& ray, double t_min, double t_max) const -> std::optional<Hit> override;
+    [[nodiscard]] auto hit(const Ray& ray, Interval interval = Interval::non_negative) const
+        -> std::optional<Hit> override;
 
     [[nodiscard]] auto center() const -> auto { return _center; }
     [[nodiscard]] auto radius() const -> auto { return _radius; }

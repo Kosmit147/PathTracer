@@ -5,11 +5,12 @@
 
 #include <optional>
 
+#include "tracer/numeric.hpp"
 #include "tracer/ray.hpp"
 
 namespace tracer {
 
-auto Sphere::hit(const Ray& ray, double t_min, double t_max) const -> std::optional<Hit>
+auto Sphere::hit(const Ray& ray, Interval interval) const -> std::optional<Hit>
 {
     const auto oc = _center - ray.origin();
 
@@ -25,16 +26,15 @@ auto Sphere::hit(const Ray& ray, double t_min, double t_max) const -> std::optio
 
     auto discriminant_sqrt = glm::sqrt(discriminant);
 
-    // a is always positive, which means that subtracting discriminant_root will give us the smaller t.
+    // a is always positive, which means subtracting discriminant_root will give us the smaller t.
     auto t = (h - discriminant_sqrt) / a;
 
-    // Check if t is outside acceptable range.
-    if (t < t_min || t > t_max)
+    if (!interval.contains(t))
     {
         // Try again with bigger t.
         t = (h + discriminant_sqrt) / a;
 
-        if (t < t_min || t > t_max)
+        if (!interval.contains(t))
             return std::nullopt;
     }
 
