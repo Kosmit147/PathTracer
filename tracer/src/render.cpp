@@ -7,7 +7,7 @@ namespace tracer {
 auto render(const CameraParams& camera_params, const ImageView& image, ObjectView objects,
             ProgressCallback progress_callback) -> void
 {
-    Camera camera{ camera_params };
+    auto camera = Camera{ camera_params };
     camera.render(image, objects, progress_callback);
 }
 
