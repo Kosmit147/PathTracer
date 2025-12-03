@@ -17,9 +17,21 @@ auto random_float() -> float
     return float_distribution(generator);
 }
 
+auto random_float(float min, float max) -> float
+{
+    auto distribution = std::uniform_real_distribution{ min, max };
+    return distribution(generator);
+}
+
 auto random_double() -> double
 {
     return double_distribution(generator);
+}
+
+auto random_double(double min, double max) -> double
+{
+    auto distribution = std::uniform_real_distribution{ min, max };
+    return distribution(generator);
 }
 
 } // namespace tracer
