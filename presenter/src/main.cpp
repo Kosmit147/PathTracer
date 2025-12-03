@@ -17,6 +17,7 @@
 #include "common.hpp"
 #include "defer.hpp"
 #include "log.hpp"
+#include "timer.hpp"
 
 namespace {
 
@@ -197,13 +198,22 @@ auto main() -> int
 
     std::vector<glm::vec4> image;
     image.reserve(image_size);
-    tracer::render(tracer::CameraParams{}, tracer::RenderParams{},
-                   std::mdspan{ std::data(image), image_height, image_width }, world, [](i32 progress) {
-                       if (progress >= 100)
-                           PT_INFO("Progress: Done!");
-                       else
-                           PT_INFO("Progress: {}%", progress);
-                   });
+
+    {
+        Timer timer;
+
+        tracer::render(tracer::CameraParams{}, tracer::RenderParams{},
+                       std::mdspan{ std::data(image), image_height, image_width }, world, [](i32 progress) {
+                           if (progress >= 100)
+                               PT_INFO("Progress: Done!");
+                           else
+                               PT_INFO("Progress: {}%", progress);
+                       });
+
+        auto time_ms = timer.elapsed_ms();
+        auto time_s = time_ms * 0.001;
+        PT_INFO("Took {:.4f}s ({:.4f}ms).", time_s, time_ms);
+    }
 
     GLuint texture;
     glCreateTextures(GL_TEXTURE_2D, 1, &texture);

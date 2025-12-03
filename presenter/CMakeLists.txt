@@ -11,6 +11,7 @@ target_sources(
 	    src/defer.hpp
 	    src/log.hpp
 	    src/main.cpp
+	    src/timer.hpp
 )
 
 target_compile_features(presenter PRIVATE cxx_std_23)
