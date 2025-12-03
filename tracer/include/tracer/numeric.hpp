@@ -1,6 +1,7 @@
 #pragma once
 
-#include <algorithm>
+#include <glm/common.hpp>
+
 #include <limits>
 
 namespace tracer {
@@ -16,7 +17,7 @@ struct Interval
     [[nodiscard]] constexpr auto length() const -> auto { return max - min; }
     [[nodiscard]] constexpr auto contains(double x) const -> bool { return x >= min && x <= max; }
     [[nodiscard]] constexpr auto surrounds(double x) const -> bool { return x > min && x < max; }
-    [[nodiscard]] constexpr auto clamp(double x) const -> auto { return std::clamp(x, min, max); }
+    [[nodiscard]] constexpr auto clamp(double x) const -> auto { return glm::clamp(x, min, max); }
 
     static const Interval empty;
     static const Interval non_negative;
