@@ -4,11 +4,11 @@
 
 namespace tracer {
 
-auto render(const CameraParams& camera_params, const ImageView& image, ObjectView objects,
-            ProgressCallback progress_callback) -> void
+auto render(const CameraParams& camera_params, const RenderParams& render_params, const ImageView& image,
+            ObjectView objects, ProgressCallback progress_callback) -> void
 {
     auto camera = Camera{ camera_params };
-    camera.render(image, objects, progress_callback);
+    camera.render(image, objects, render_params, progress_callback);
 }
 
 } // namespace tracer

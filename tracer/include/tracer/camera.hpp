@@ -1,16 +1,24 @@
 #pragma once
 
+#include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 
+#include <mdspan>
+#include <memory>
 #include <optional>
+#include <span>
 
 #include "tracer/common.hpp"
 #include "tracer/numeric.hpp"
+#include "tracer/object.hpp"
 #include "tracer/ray.hpp"
-#include "tracer/render.hpp"
 
 namespace tracer {
+
+using ProgressCallback = void (*)(i32);
+using ImageView = std::mdspan<glm::vec4, std::dextents<usize, 2>>;
+using ObjectView = std::span<const std::shared_ptr<const Object>>;
 
 struct CameraParams
 {
@@ -24,15 +32,25 @@ struct Viewport
     double height = 2.0;
 };
 
+struct RenderParams
+{
+    usize samples = 100;
+};
+
 class Camera
 {
 public:
     explicit Camera(const CameraParams& params = {});
 
-    auto render(const ImageView& image, ObjectView world, ProgressCallback progress_callback) const -> void;
+    auto render(
+        const ImageView& image, ObjectView world, const RenderParams& render_params,
+        ProgressCallback progress_callback = [](i32) {}) const -> void;
 
 private:
-    [[nodiscard]] auto ray(usize x, usize y, usize image_width, usize image_height, Viewport viewport) const -> Ray;
+    [[nodiscard]] auto pixel_color(usize x, usize y, usize image_width, usize image_height, Viewport viewport,
+                                   usize samples, ObjectView world) const -> glm::vec4;
+    [[nodiscard]] auto sample_pixel(const glm::dvec3& pixel_position, glm::dvec2 pixel_size) const -> Ray;
+    [[nodiscard]] auto sample_unit_square() const -> glm::dvec2;
     [[nodiscard]] auto ray_color(const Ray& ray, ObjectView world) const -> glm::vec4;
     [[nodiscard]] auto closest_hit(ObjectView objects, const Ray& ray, Interval interval = Interval::non_negative) const
         -> std::optional<Hit>;
