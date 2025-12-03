@@ -1,5 +1,6 @@
 #include "tracer/camera.hpp"
 
+#include <glm/common.hpp>
 #include <glm/geometric.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
@@ -45,7 +46,8 @@ auto Camera::render(const ImageView& image, ObjectView world, ProgressCallback p
         for (usize x = 0; x < width; x++)
         {
             auto r = ray(x, y, width, height, viewport);
-            image[y, x] = ray_color(r, world);
+            auto color = ray_color(r, world);
+            image[y, x] = glm::clamp(color, glm::vec4{ 0.0f }, glm::vec4{ 1.0f });
         }
     }
 
