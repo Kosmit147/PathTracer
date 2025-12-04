@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 4.1)
 
 option(PT_ASSERTS "Enable asserts" FALSE)
 option(PT_WARNING_AS_ERROR "Treat warnings as errors" FALSE)
+option(PT_OPENGL_DEBUG_CONTEXT "Enable OpenGL debug messages" FALSE)
 
 set(PT_COMPILE_FLAGS "" CACHE STRING "Flags to pass to the compiler")
 

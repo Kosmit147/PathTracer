@@ -25,6 +25,10 @@ if(PT_ASSERTS)
     target_compile_definitions(presenter PRIVATE PT_ASSERTS)
 endif()
 
+if(PT_OPENGL_DEBUG_CONTEXT)
+    target_compile_definitions(presenter PRIVATE PT_OPENGL_DEBUG_CONTEXT)
+endif()
+
 target_link_libraries(presenter PRIVATE glad::glad)
 target_link_libraries(presenter PRIVATE glfw)
 target_link_libraries(presenter PRIVATE spdlog::spdlog)

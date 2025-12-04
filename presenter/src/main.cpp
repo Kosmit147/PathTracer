@@ -31,6 +31,8 @@ auto glfw_framebuffer_size_callback([[maybe_unused]] GLFWwindow* window, int wid
     glViewport(0, 0, width, height);
 }
 
+#if defined(PT_OPENGL_DEBUG_CONTEXT)
+
 auto gl_debug_message_callback([[maybe_unused]] GLenum source, [[maybe_unused]] GLenum type, GLuint id, GLenum severity,
                                [[maybe_unused]] GLsizei length, const GLchar* message,
                                [[maybe_unused]] const void* user_param) -> void
@@ -51,6 +53,8 @@ auto gl_debug_message_callback([[maybe_unused]] GLenum source, [[maybe_unused]] 
         PRESENTER_ASSERT(false);
     }
 }
+
+#endif
 
 const std::string vertex_shader_source =
     R"(#version 460 core
@@ -130,8 +134,9 @@ auto main() -> int
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    // TODO: Add a compile option to enable OpenGL debug messages instead of always enabling them.
+#if defined(PT_OPENGL_DEBUG_CONTEXT)
     glfwWindowHint(GLFW_CONTEXT_DEBUG, GLFW_TRUE);
+#endif
 
     auto window = glfwCreateWindow(window_width, window_height, "Path Tracer", nullptr, nullptr);
 
@@ -152,10 +157,11 @@ auto main() -> int
         return EXIT_FAILURE;
     }
 
-    // TODO: Add a compile option to enable OpenGL debug messages instead of always enabling them.
+#if defined(PT_OPENGL_DEBUG_CONTEXT)
     glEnable(GL_DEBUG_OUTPUT);
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
     glDebugMessageCallback(gl_debug_message_callback, nullptr);
+#endif
 
     glViewport(0, 0, window_width, window_height);
     glfwSetFramebufferSizeCallback(window, glfw_framebuffer_size_callback);

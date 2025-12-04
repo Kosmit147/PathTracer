@@ -30,7 +30,8 @@
       "inherits": "base",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
-        "PT_ASSERTS": true
+        "PT_ASSERTS": true,
+        "PT_OPENGL_DEBUG_CONTEXT": true
       }
     },
     {
@@ -38,7 +39,8 @@
       "inherits": "base",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "RelWithDebInfo",
-        "PT_ASSERTS": true
+        "PT_ASSERTS": true,
+        "PT_OPENGL_DEBUG_CONTEXT": true
       }
     },
     {
@@ -46,7 +48,8 @@
       "inherits": "base",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
-        "PT_ASSERTS": false
+        "PT_ASSERTS": false,
+        "PT_OPENGL_DEBUG_CONTEXT": false
       }
     }
   ],
