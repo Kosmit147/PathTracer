@@ -23,7 +23,7 @@ namespace {
 
 auto glfw_error_callback(int error_code, const char* description) -> void
 {
-    PT_ERROR("GLFW Error {}: {}", error_code, description);
+    PRESENTER_ERROR("GLFW Error {}: {}", error_code, description);
 }
 
 auto glfw_framebuffer_size_callback([[maybe_unused]] GLFWwindow* window, int width, int height) -> void
@@ -38,17 +38,17 @@ auto gl_debug_message_callback([[maybe_unused]] GLenum source, [[maybe_unused]] 
     switch (severity)
     {
     case GL_DEBUG_SEVERITY_NOTIFICATION:
-        PT_INFO("OpenGL Notification {}: {}", id, message);
+        PRESENTER_INFO("OpenGL Notification {}: {}", id, message);
         break;
     case GL_DEBUG_SEVERITY_LOW:
-        PT_WARN("OpenGL Warning {}: {}", id, message);
+        PRESENTER_WARN("OpenGL Warning {}: {}", id, message);
         break;
     case GL_DEBUG_SEVERITY_MEDIUM:
     case GL_DEBUG_SEVERITY_HIGH:
-        PT_ERROR("OpenGL Error {}: {}", id, message);
+        PRESENTER_ERROR("OpenGL Error {}: {}", id, message);
         break;
     default:
-        PT_ASSERT(false);
+        PRESENTER_ASSERT(false);
     }
 }
 
@@ -120,7 +120,7 @@ auto main() -> int
 
     if (!glfwInit())
     {
-        PT_CRITICAL("Failed to initialize GLFW.");
+        PRESENTER_CRITICAL("Failed to initialize GLFW.");
         return EXIT_FAILURE;
     }
 
@@ -137,7 +137,7 @@ auto main() -> int
 
     if (!window)
     {
-        PT_CRITICAL("Failed to create a window.");
+        PRESENTER_CRITICAL("Failed to create a window.");
         return EXIT_FAILURE;
     }
 
@@ -148,7 +148,7 @@ auto main() -> int
 
     if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress)))
     {
-        PT_CRITICAL("Failed to load OpenGL functions.");
+        PRESENTER_CRITICAL("Failed to load OpenGL functions.");
         return EXIT_FAILURE;
     }
 
@@ -160,8 +160,8 @@ auto main() -> int
     glViewport(0, 0, window_width, window_height);
     glfwSetFramebufferSizeCallback(window, glfw_framebuffer_size_callback);
 
-    PT_INFO("OpenGL Renderer: {}", reinterpret_cast<const char*>(glGetString(GL_RENDERER)));
-    PT_INFO("OpenGL Version: {}", reinterpret_cast<const char*>(glGetString(GL_VERSION)));
+    PRESENTER_INFO("OpenGL Renderer: {}", reinterpret_cast<const char*>(glGetString(GL_RENDERER)));
+    PRESENTER_INFO("OpenGL Version: {}", reinterpret_cast<const char*>(glGetString(GL_VERSION)));
 
     auto vertex_source_data = vertex_shader_source.c_str();
     auto fragment_source_data = fragment_shader_source.c_str();
@@ -171,7 +171,7 @@ auto main() -> int
     glCompileShader(vertex_shader);
     GLint vertex_shader_is_compiled;
     glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &vertex_shader_is_compiled);
-    PT_ASSERT(vertex_shader_is_compiled == GL_TRUE);
+    PRESENTER_ASSERT(vertex_shader_is_compiled == GL_TRUE);
     Defer delete_vertex_shader{ [&] { glDeleteShader(vertex_shader); } };
 
     GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -179,7 +179,7 @@ auto main() -> int
     glCompileShader(fragment_shader);
     GLint fragment_shader_is_compiled;
     glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &fragment_shader_is_compiled);
-    PT_ASSERT(fragment_shader_is_compiled == GL_TRUE);
+    PRESENTER_ASSERT(fragment_shader_is_compiled == GL_TRUE);
     Defer delete_fragment_shader{ [&] { glDeleteShader(fragment_shader); } };
 
     GLuint shader = glCreateProgram();
@@ -188,7 +188,7 @@ auto main() -> int
     glLinkProgram(shader);
     GLint shader_is_linked;
     glGetProgramiv(shader, GL_LINK_STATUS, &shader_is_linked);
-    PT_ASSERT(shader_is_linked == GL_TRUE);
+    PRESENTER_ASSERT(shader_is_linked == GL_TRUE);
 
     glDetachShader(shader, vertex_shader);
     glDetachShader(shader, fragment_shader);
@@ -205,14 +205,14 @@ auto main() -> int
         tracer::render(tracer::CameraParams{}, tracer::RenderParams{},
                        std::mdspan{ std::data(image), image_height, image_width }, world, [](i32 progress) {
                            if (progress >= 100)
-                               PT_INFO("Progress: Done!");
+                               PRESENTER_INFO("Progress: Done!");
                            else
-                               PT_INFO("Progress: {}%", progress);
+                               PRESENTER_INFO("Progress: {}%", progress);
                        });
 
         auto time_ms = timer.elapsed_ms();
         auto time_s = time_ms * 0.001;
-        PT_INFO("Took {:.4f}s ({:.4f}ms).", time_s, time_ms);
+        PRESENTER_INFO("Took {:.4f}s ({:.4f}ms).", time_s, time_ms);
     }
 
     GLuint texture;

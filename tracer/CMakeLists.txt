@@ -16,6 +16,7 @@ target_sources(
 		BASE_DIRS
 		    include
 		FILES
+		    include/tracer/assert.hpp
 		    include/tracer/camera.hpp
 		    include/tracer/common.hpp
 		    include/tracer/numeric.hpp

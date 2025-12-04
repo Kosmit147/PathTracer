@@ -8,6 +8,7 @@
 
 #include <optional>
 
+#include "tracer/assert.hpp"
 #include "tracer/common.hpp"
 #include "tracer/numeric.hpp"
 #include "tracer/object.hpp"
@@ -73,7 +74,7 @@ auto Camera::pixel_color(usize x, usize y, usize image_width, usize image_height
         color += ray_color(ray, world);
     }
 
-    // TODO: ASSERT(samples != 0);
+    TRACER_ASSERT(samples != 0);
     color /= static_cast<float>(samples);
 
     return glm::clamp(color, glm::vec4{ 0.0f }, glm::vec4{ 1.0f });
