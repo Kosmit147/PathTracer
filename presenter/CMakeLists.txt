@@ -15,10 +15,14 @@ target_sources(
 )
 
 target_compile_features(presenter PRIVATE cxx_std_23)
-target_compile_options(presenter PRIVATE "${PT_WARNINGS}")
+target_compile_options(presenter PRIVATE "${PT_COMPILE_FLAGS}")
 
 if(PT_WARNING_AS_ERROR)
     set_target_properties(presenter PROPERTIES COMPILE_WARNING_AS_ERROR TRUE)
+endif()
+
+if(PT_ASSERTS)
+    target_compile_definitions(presenter PRIVATE PT_ASSERTS)
 endif()
 
 target_link_libraries(presenter PRIVATE glad::glad)

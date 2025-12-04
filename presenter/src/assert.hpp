@@ -4,8 +4,7 @@
 #include <iostream>
 #include <source_location>
 
-// TODO: Add a compile option to toggle asserts.
-#define PRESENTER_ASSERT(...)                                                                                          \
+#define PRESENTER_ASSERT_IMPL(...)                                                                                     \
     do                                                                                                                 \
     {                                                                                                                  \
         if ((__VA_ARGS__)) [[likely]]                                                                                  \
@@ -20,4 +19,14 @@
         }                                                                                                              \
     } while (false)
 
-#define PRESENTER_RUNTIME_ASSERT(...) PRESENTER_ASSERT(__VA_ARGS__)
+#if defined(PT_ASSERTS)
+
+    #define PRESENTER_ASSERT(...) PRESENTER_ASSERT_IMPL(__VA_ARGS__)
+
+#else
+
+    #define PRESENTER_ASSERT(...) ((void)(0))
+
+#endif
+
+#define PRESENTER_RUNTIME_ASSERT(...) PRESENTER_ASSERT_IMPL(__VA_ARGS__)

@@ -28,10 +28,14 @@ target_sources(
 )
 
 target_compile_features(tracer PUBLIC cxx_std_23)
-target_compile_options(tracer PRIVATE "${PT_WARNINGS}")
+target_compile_options(tracer PRIVATE "${PT_COMPILE_FLAGS}")
 
 if(PT_WARNING_AS_ERROR)
     set_target_properties(tracer PROPERTIES COMPILE_WARNING_AS_ERROR TRUE)
+endif()
+
+if(PT_ASSERTS)
+    target_compile_definitions(tracer PUBLIC PT_ASSERTS)
 endif()
 
 target_link_libraries(tracer PUBLIC glm::glm)
