@@ -197,7 +197,7 @@ auto main() -> int
     glUseProgram(shader);
 
     std::vector<glm::vec4> image;
-    image.reserve(image_size);
+    image.resize(image_size);
 
     {
         Timer timer;
