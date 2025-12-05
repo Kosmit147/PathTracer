@@ -193,9 +193,17 @@ auto main() -> int
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
+
     auto& imgui_io = ImGui::GetIO();
     imgui_io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     imgui_io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+    imgui_io.ConfigDpiScaleFonts = true;     // Automatically overwrite style.FontScaleDpi when monitor DPI changes.
+    imgui_io.ConfigDpiScaleViewports = true; // Scale ImGui and platform windows when monitor DPI changes.
+
+    auto monitor_scale = ImGui_ImplGlfw_GetContentScaleForWindow(window);
+    auto& imgui_style = ImGui::GetStyle();
+    imgui_style.ScaleAllSizes(monitor_scale);
+    imgui_style.FontScaleDpi = monitor_scale;
 
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init();

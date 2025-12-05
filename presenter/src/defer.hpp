@@ -24,5 +24,5 @@ public:
 
 private:
     const F _f;
-    bool _dismissed = false;
+    bool _dismissed{ false };
 };
