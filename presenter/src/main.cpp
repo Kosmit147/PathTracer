@@ -1,8 +1,11 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <backends/imgui_impl_glfw.h>
+#include <backends/imgui_impl_opengl3.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
+#include <imgui.h>
 #include <spdlog/spdlog.h>
 #include <tracer/camera.hpp>
 #include <tracer/object.hpp>
@@ -60,7 +63,7 @@ auto gl_debug_message_callback([[maybe_unused]] GLenum source, [[maybe_unused]] 
 
 #endif
 
-const std::string vertex_shader_source =
+const auto vertex_shader_source = std::string{
     R"(#version 460 core
 
 out vec2 TexCoords;
@@ -92,9 +95,10 @@ void main()
 
     gl_Position = vec4(position, 0.0, 1.0);
     TexCoords = tex_coords;
-})";
+})"
+};
 
-const std::string fragment_shader_source =
+const auto fragment_shader_source = std::string{
     R"(#version 460 core
 
 in vec2 TexCoords;
@@ -106,7 +110,8 @@ out vec4 outColor;
 void main()
 {
     outColor = texture(image, TexCoords);
-})";
+})"
+};
 
 constexpr u32 image_width = 1920;
 constexpr u32 image_height = 1080;
@@ -166,9 +171,18 @@ auto main() -> int
     }
 
 #if defined(PT_OPENGL_DEBUG_CONTEXT)
-    glEnable(GL_DEBUG_OUTPUT);
-    glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-    glDebugMessageCallback(gl_debug_message_callback, nullptr);
+    {
+        glEnable(GL_DEBUG_OUTPUT);
+        glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+        glDebugMessageCallback(gl_debug_message_callback, nullptr);
+
+        static constexpr std::array<GLuint, 1> disabled_messages = {
+            131185, // Buffer detailed info from NVIDIA.
+        };
+
+        glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_OTHER, GL_DONT_CARE,
+                              static_cast<GLsizei>(disabled_messages.size()), disabled_messages.data(), GL_FALSE);
+    }
 #endif
 
     glViewport(0, 0, window_width, window_height);
@@ -177,10 +191,25 @@ auto main() -> int
     PRESENTER_INFO("OpenGL Renderer: {}", reinterpret_cast<const char*>(glGetString(GL_RENDERER)));
     PRESENTER_INFO("OpenGL Version: {}", reinterpret_cast<const char*>(glGetString(GL_VERSION)));
 
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& imgui_io = ImGui::GetIO();
+    imgui_io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+    imgui_io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init();
+
+    Defer shut_down_imgui{ [] {
+        ImGui_ImplOpenGL3_Shutdown();
+        ImGui_ImplGlfw_Shutdown();
+        ImGui::DestroyContext();
+    } };
+
     auto vertex_source_data = vertex_shader_source.c_str();
     auto fragment_source_data = fragment_shader_source.c_str();
 
-    GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
+    auto vertex_shader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertex_shader, 1, &vertex_source_data, nullptr);
     glCompileShader(vertex_shader);
     GLint vertex_shader_is_compiled;
@@ -188,7 +217,7 @@ auto main() -> int
     PRESENTER_ASSERT(vertex_shader_is_compiled == GL_TRUE);
     Defer delete_vertex_shader{ [&] { glDeleteShader(vertex_shader); } };
 
-    GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
+    auto fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(fragment_shader, 1, &fragment_source_data, nullptr);
     glCompileShader(fragment_shader);
     GLint fragment_shader_is_compiled;
@@ -196,7 +225,7 @@ auto main() -> int
     PRESENTER_ASSERT(fragment_shader_is_compiled == GL_TRUE);
     Defer delete_fragment_shader{ [&] { glDeleteShader(fragment_shader); } };
 
-    GLuint shader = glCreateProgram();
+    auto shader = glCreateProgram();
     glAttachShader(shader, vertex_shader);
     glAttachShader(shader, fragment_shader);
     glLinkProgram(shader);
@@ -227,7 +256,7 @@ auto main() -> int
     glCreateVertexArrays(1, &vertex_array);
     Defer delete_vertex_array{ [&] { glDeleteVertexArrays(1, &vertex_array); } };
 
-    std::vector<glm::vec4> image;
+    auto image = std::vector<glm::vec4>{};
     image.resize(image_size);
     const auto image_span = std::mdspan{ image.data(), image_height, image_width };
 
@@ -252,6 +281,10 @@ auto main() -> int
 
     while (!glfwWindowShouldClose(window))
     {
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
         if (render_result.valid())
         {
             using namespace std::chrono_literals;
@@ -263,8 +296,21 @@ auto main() -> int
             }
         }
 
+        ImGui::ShowDemoWindow();
+
         glClear(GL_COLOR_BUFFER_BIT);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+        if (imgui_io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+        {
+            ImGui::UpdatePlatformWindows();
+            ImGui::RenderPlatformWindowsDefault();
+            glfwMakeContextCurrent(window);
+        }
+
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
