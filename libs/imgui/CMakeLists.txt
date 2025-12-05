@@ -12,6 +12,7 @@ target_sources(
 	    imgui/imgui_tables.cpp
 	    imgui/imgui_widgets.cpp
 		imgui/backends/imgui_impl_glfw.cpp
+        imgui/backends/imgui_impl_opengl3.cpp
 
 	PUBLIC
 	    FILE_SET HEADERS
@@ -25,6 +26,7 @@ target_sources(
             imgui/imstb_textedit.h
             imgui/imstb_truetype.h
             imgui/backends/imgui_impl_glfw.h
+            imgui/backends/imgui_impl_opengl3.h
 )
 
 target_compile_features(imgui PUBLIC cxx_std_11)
