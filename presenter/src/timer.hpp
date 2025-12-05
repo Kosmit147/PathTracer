@@ -7,8 +7,6 @@
 class Timer
 {
 public:
-    explicit Timer() { start(); }
-
     auto start() -> void { _start = std::chrono::high_resolution_clock::now(); }
     [[nodiscard]] auto elapsed_s() const -> double { return static_cast<double>(time()) * 0.001 * 0.001; }
     [[nodiscard]] auto elapsed_ms() const -> double { return static_cast<double>(time()) * 0.001; }

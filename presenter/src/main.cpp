@@ -1,13 +1,17 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <glm/gtc/type_ptr.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
+#include <spdlog/spdlog.h>
 #include <tracer/camera.hpp>
 #include <tracer/object.hpp>
 #include <tracer/render.hpp>
 
 #include <array>
+#include <chrono>
 #include <cstdlib>
+#include <future>
 #include <mdspan>
 #include <memory>
 #include <string>
@@ -120,6 +124,10 @@ const auto world = std::array<std::shared_ptr<const tracer::Object>, 2>{
 
 auto main() -> int
 {
+    // There's a bug in VS runtime that can cause the application to deadlock when it exits when using asynchronous
+    // loggers. Calling spdlog::shutdown() prevents that.
+    Defer shutdown_spdlog{ [] { spdlog::shutdown(); } };
+
     glfwSetErrorCallback(glfw_error_callback);
 
     if (!glfwInit())
@@ -202,25 +210,6 @@ auto main() -> int
 
     glUseProgram(shader);
 
-    std::vector<glm::vec4> image;
-    image.resize(image_size);
-
-    {
-        Timer timer;
-
-        tracer::render(tracer::CameraParams{}, tracer::RenderParams{},
-                       std::mdspan{ std::data(image), image_height, image_width }, world, [](i32 progress) {
-                           if (progress >= 100)
-                               PRESENTER_INFO("Progress: Done!");
-                           else
-                               PRESENTER_INFO("Progress: {}%", progress);
-                       });
-
-        auto time_ms = timer.elapsed_ms();
-        auto time_s = time_ms * 0.001;
-        PRESENTER_INFO("Took {:.4f}s ({:.4f}ms).", time_s, time_ms);
-    }
-
     GLuint texture;
     glCreateTextures(GL_TEXTURE_2D, 1, &texture);
     Defer delete_texture{ [&] { glDeleteTextures(1, &texture); } };
@@ -231,17 +220,49 @@ auto main() -> int
     glTextureParameteri(texture, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     glTextureStorage2D(texture, 1, GL_RGBA8, image_width, image_height);
-    glTextureSubImage2D(texture, 0, 0, 0, image_width, image_height, GL_RGBA, GL_FLOAT, image.data());
+    constexpr static auto black = glm::vec4{ 0.0f, 0.0f, 0.0f, 1.0f };
+    glClearTexImage(texture, 0, GL_RGBA, GL_FLOAT, glm::value_ptr(black));
 
     GLuint vertex_array;
     glCreateVertexArrays(1, &vertex_array);
     Defer delete_vertex_array{ [&] { glDeleteVertexArrays(1, &vertex_array); } };
+
+    std::vector<glm::vec4> image;
+    image.resize(image_size);
+    const auto image_span = std::mdspan{ image.data(), image_height, image_width };
+
+    auto render_result = std::async(std::launch::async, [image_span] {
+        Timer timer;
+        timer.start();
+
+        tracer::render(tracer::CameraParams{}, tracer::RenderParams{}, image_span, world, [](i32 progress) {
+            if (progress >= 100)
+                PRESENTER_INFO("Progress: Done!");
+            else
+                PRESENTER_INFO("Progress: {}%", progress);
+        });
+
+        auto time_ms = timer.elapsed_ms();
+        auto time_s = time_ms * 0.001;
+        PRESENTER_INFO("Took {:.4f}s ({:.4f}ms).", time_s, time_ms);
+    });
 
     glBindVertexArray(vertex_array);
     glBindTextureUnit(0, texture);
 
     while (!glfwWindowShouldClose(window))
     {
+        if (render_result.valid())
+        {
+            using namespace std::chrono_literals;
+
+            if (render_result.wait_for(1ms) == std::future_status::ready)
+            {
+                render_result.get();
+                glTextureSubImage2D(texture, 0, 0, 0, image_width, image_height, GL_RGBA, GL_FLOAT, image.data());
+            }
+        }
+
         glClear(GL_COLOR_BUFFER_BIT);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
         glfwSwapBuffers(window);
