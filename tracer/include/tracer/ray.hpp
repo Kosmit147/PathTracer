@@ -25,8 +25,8 @@ struct Hit
 {
     glm::dvec3 point{ 0.0 };
     glm::dvec3 normal{ 0.0 };
-    double t = 0.0;
-    bool front_face = false;
+    double t{ 0.0 };
+    bool front_face{ false };
 };
 
 } // namespace tracer

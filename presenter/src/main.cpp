@@ -176,7 +176,7 @@ auto main() -> int
         glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
         glDebugMessageCallback(gl_debug_message_callback, nullptr);
 
-        static constexpr std::array<GLuint, 1> disabled_messages = {
+        static constexpr auto disabled_messages = std::array<GLuint, 1>{
             131185, // Buffer detailed info from NVIDIA.
         };
 
@@ -193,7 +193,7 @@ auto main() -> int
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    ImGuiIO& imgui_io = ImGui::GetIO();
+    auto& imgui_io = ImGui::GetIO();
     imgui_io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     imgui_io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
@@ -261,7 +261,7 @@ auto main() -> int
     const auto image_span = std::mdspan{ image.data(), image_height, image_width };
 
     auto render_result = std::async(std::launch::async, [image_span] {
-        Timer timer;
+        auto timer = Timer{};
         timer.start();
 
         tracer::render(tracer::CameraParams{}, tracer::RenderParams{}, image_span, world, [](i32 progress) {
