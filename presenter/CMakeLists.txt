@@ -31,6 +31,8 @@ endif()
 
 target_link_libraries(presenter PRIVATE glad::glad)
 target_link_libraries(presenter PRIVATE glfw)
+target_link_libraries(presenter PRIVATE glm::glm)
+target_link_libraries(presenter PRIVATE PathTracer::imgui)
 target_link_libraries(presenter PRIVATE spdlog::spdlog)
 target_link_libraries(presenter PRIVATE PathTracer::tracer)
 
