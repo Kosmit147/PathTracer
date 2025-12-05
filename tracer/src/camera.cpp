@@ -25,12 +25,12 @@ auto Camera::render(const ImageView& image, ObjectView world, const RenderParams
     const auto image_height = image.extent(0);
     const auto image_width = image.extent(1);
 
-    auto aspect_ratio = static_cast<double>(image_width) / static_cast<double>(image_height);
+    const auto aspect_ratio = static_cast<double>(image_width) / static_cast<double>(image_height);
 
-    auto viewport_height = 2.0;
-    auto viewport_width = aspect_ratio * viewport_height;
+    const auto viewport_height = 2.0;
+    const auto viewport_width = aspect_ratio * viewport_height;
 
-    auto viewport = Viewport{
+    const auto viewport = Viewport{
         .width = viewport_width,
         .height = viewport_height,
     };
@@ -107,7 +107,7 @@ auto Camera::ray_color(const Ray& ray, ObjectView world) const -> glm::vec4
 
 auto Camera::closest_hit(ObjectView objects, const Ray& ray, Interval interval) const -> std::optional<Hit>
 {
-    auto closest = std::optional<Hit>{ std::nullopt };
+    auto closest = std::optional<Hit>{};
 
     for (auto& object : objects)
     {

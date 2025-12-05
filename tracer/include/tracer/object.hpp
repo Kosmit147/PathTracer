@@ -33,7 +33,7 @@ public:
 
 private:
     glm::dvec3 _center{ 0.0 };
-    double _radius = 0.0;
+    double _radius{ 0.0 };
 };
 
 } // namespace tracer

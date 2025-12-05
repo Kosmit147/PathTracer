@@ -11,8 +11,8 @@ inline constexpr auto infinity = std::numeric_limits<double>::infinity();
 struct Interval
 {
     // Default interval is empty.
-    double min = +infinity;
-    double max = -infinity;
+    double min{ +infinity };
+    double max{ -infinity };
 
     [[nodiscard]] constexpr auto length() const -> auto { return max - min; }
     [[nodiscard]] constexpr auto contains(double x) const -> bool { return x >= min && x <= max; }

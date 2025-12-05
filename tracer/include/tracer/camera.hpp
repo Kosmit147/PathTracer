@@ -23,18 +23,18 @@ using ObjectView = std::span<const std::shared_ptr<const Object>>;
 struct CameraParams
 {
     glm::dvec3 position{ 0.0 };
-    double focal_length = 1.0;
+    double focal_length{ 1.0 };
 };
 
 struct Viewport
 {
-    double width = 2.0;
-    double height = 2.0;
+    double width{ 2.0 };
+    double height{ 2.0 };
 };
 
 struct RenderParams
 {
-    usize samples = 100;
+    usize samples{ 100 };
 };
 
 class Camera
@@ -58,7 +58,7 @@ private:
 
 private:
     glm::dvec3 _position{ 0.0 };
-    double _focal_length = 1.0;
+    double _focal_length{ 1.0 };
 };
 
 } // namespace tracer
