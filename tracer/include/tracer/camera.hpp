@@ -35,6 +35,7 @@ struct Viewport
 struct RenderParams
 {
     usize samples{ 100 };
+    usize max_depth{ 10 };
 };
 
 class Camera
@@ -48,13 +49,13 @@ public:
 
 private:
     [[nodiscard]] auto pixel_color(usize x, usize y, usize image_width, usize image_height, Viewport viewport,
-                                   usize samples, ObjectView world) const -> glm::vec4;
+                                   usize samples, usize max_depth, ObjectView world) const -> glm::vec4;
     [[nodiscard]] auto sample_pixel(const glm::dvec3& pixel_position, glm::dvec2 pixel_size) const -> Ray;
     [[nodiscard]] auto sample_unit_square() const -> glm::dvec2;
-    [[nodiscard]] auto ray_color(const Ray& ray, ObjectView world) const -> glm::vec4;
+    [[nodiscard]] auto ray_color(const Ray& ray, ObjectView world, usize max_depth) const -> glm::vec4;
     [[nodiscard]] auto closest_hit(ObjectView objects, const Ray& ray, Interval interval = Interval::non_negative) const
         -> std::optional<Hit>;
-    [[nodiscard]] auto background(const Ray& ray) const -> glm::vec4;
+    [[nodiscard]] auto ambient(const Ray& ray) const -> glm::vec4;
 
 private:
     glm::dvec3 _position{ 0.0 };
