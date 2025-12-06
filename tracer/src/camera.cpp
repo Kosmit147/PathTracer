@@ -100,7 +100,7 @@ auto Camera::ray_color(const Ray& ray, ObjectView world, usize max_depth) -> glm
     {
         static constexpr auto material_color = glm::vec4{ 0.5f, 0.5f, 0.5f, 1.0f };
 
-        auto reflect_direction = random_unit_dvec3_on_hemisphere(hit->normal);
+        auto reflect_direction = lambertian_reflection(hit->normal);
         auto reflected_ray = Ray{
             hit->point,
             reflect_direction,
@@ -142,6 +142,17 @@ auto Camera::ambient(const Ray& ray) -> glm::vec4
     auto background = blend * blue + (1.0f - blend) * white;
 
     return glm::vec4{ background, 1.0f };
+}
+
+auto Camera::random_reflection(const glm::dvec3& normal) -> glm::dvec3
+{
+    return random_unit_dvec3_on_hemisphere(normal);
+}
+
+auto Camera::lambertian_reflection(const glm::dvec3& normal) -> glm::dvec3
+{
+    // Pick a random point on a unit sphere tangent to the intersection point.
+    return glm::normalize(normal + random_unit_dvec3());
 }
 
 } // namespace tracer
