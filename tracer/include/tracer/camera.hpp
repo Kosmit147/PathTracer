@@ -58,6 +58,9 @@ private:
     [[nodiscard]] static auto sample_unit_square() -> glm::dvec2;
     [[nodiscard]] static auto ambient(const Ray& ray) -> glm::vec4;
 
+    [[nodiscard]] static auto random_reflection(const glm::dvec3& normal) -> glm::dvec3;
+    [[nodiscard]] static auto lambertian_reflection(const glm::dvec3& normal) -> glm::dvec3;
+
 private:
     glm::dvec3 _position{ 0.0 };
     double _focal_length{ 1.0 };
