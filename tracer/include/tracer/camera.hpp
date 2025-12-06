@@ -35,7 +35,7 @@ struct Viewport
 struct RenderParams
 {
     usize samples{ 100 };
-    usize max_depth{ 10 };
+    usize max_depth{ 50 };
 };
 
 class Camera
