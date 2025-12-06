@@ -91,12 +91,7 @@ auto Camera::sample_pixel(const glm::dvec3& pixel_position, glm::dvec2 pixel_siz
     return Ray{ _position, ray_direction };
 }
 
-auto Camera::sample_unit_square() const -> glm::dvec2
-{
-    return glm::dvec2{ random_double(-0.5, 0.5), random_double(-0.5, 0.5) };
-}
-
-auto Camera::ray_color(const Ray& ray, ObjectView world, usize max_depth) const -> glm::vec4
+auto Camera::ray_color(const Ray& ray, ObjectView world, usize max_depth) -> glm::vec4
 {
     if (max_depth == 0)
         return glm::vec4{ 0.0f };
@@ -117,7 +112,7 @@ auto Camera::ray_color(const Ray& ray, ObjectView world, usize max_depth) const 
     return ambient(ray);
 }
 
-auto Camera::closest_hit(ObjectView objects, const Ray& ray, Interval interval) const -> std::optional<Hit>
+auto Camera::closest_hit(ObjectView objects, const Ray& ray, Interval interval) -> std::optional<Hit>
 {
     auto closest = std::optional<Hit>{};
 
@@ -133,7 +128,12 @@ auto Camera::closest_hit(ObjectView objects, const Ray& ray, Interval interval) 
     return closest;
 }
 
-auto Camera::ambient(const Ray& ray) const -> glm::vec4
+auto Camera::sample_unit_square() -> glm::dvec2
+{
+    return glm::dvec2{ random_double(-0.5, 0.5), random_double(-0.5, 0.5) };
+}
+
+auto Camera::ambient(const Ray& ray) -> glm::vec4
 {
     static constexpr auto blue = glm::vec3{ 0.5f, 0.7f, 1.0f };
     static constexpr auto white = glm::vec3{ 1.0f };
