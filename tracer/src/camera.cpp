@@ -48,20 +48,22 @@ auto Camera::render(const ImageView& image, ObjectView world, const RenderParams
         }
 
         for (usize x = 0; x < image_width; x++)
-            image[y, x] = pixel_color(x, y, image_width, image_height, viewport, render_params.samples, world);
+            image[y, x] = pixel_color(x, y, image_width, image_height, viewport, render_params.samples,
+                                      render_params.max_depth, world);
     }
 
     progress_callback(100);
 }
 
 auto Camera::pixel_color(usize x, usize y, usize image_width, usize image_height, Viewport viewport, usize samples,
-                         ObjectView world) const -> glm::vec4
+                         usize max_depth, ObjectView world) const -> glm::vec4
 {
     const auto pixel_x_position =
         ((static_cast<double>(x) + 0.5) / static_cast<double>(image_width) - 0.5) * viewport.width;
     const auto pixel_y_position =
         -(((static_cast<double>(y) + 0.5) / static_cast<double>(image_height) - 0.5) * viewport.height);
 
+    TRACER_ASSERT(_focal_length != 0.0);
     const auto pixel_position = glm::dvec3{ pixel_x_position, pixel_y_position, -_focal_length };
     const auto pixel_size = glm::dvec2{ viewport.width / static_cast<double>(image_width),
                                         viewport.height / static_cast<double>(image_height) };
@@ -71,7 +73,7 @@ auto Camera::pixel_color(usize x, usize y, usize image_width, usize image_height
     for (usize i = 0; i < samples; i++)
     {
         auto ray = sample_pixel(pixel_position, pixel_size);
-        color += ray_color(ray, world);
+        color += ray_color(ray, world, max_depth);
     }
 
     TRACER_ASSERT(samples != 0);
@@ -94,15 +96,25 @@ auto Camera::sample_unit_square() const -> glm::dvec2
     return glm::dvec2{ random_double(-0.5, 0.5), random_double(-0.5, 0.5) };
 }
 
-auto Camera::ray_color(const Ray& ray, ObjectView world) const -> glm::vec4
+auto Camera::ray_color(const Ray& ray, ObjectView world, usize max_depth) const -> glm::vec4
 {
+    if (max_depth == 0)
+        return ambient(ray);
+
     if (auto hit = closest_hit(world, ray))
     {
-        auto normal_color = hit->normal / 2.0 + 0.5;
-        return glm::vec4{ normal_color, 1.0f };
+        static constexpr auto material_color = glm::vec4{ 0.5f, 0.5f, 0.5f, 1.0f };
+
+        auto reflect_direction = random_unit_dvec3_on_hemisphere(hit->normal);
+        auto reflected_ray = Ray{
+            hit->point,
+            reflect_direction,
+        };
+
+        return material_color * ray_color(reflected_ray, world, max_depth - 1);
     }
 
-    return background(ray);
+    return ambient(ray);
 }
 
 auto Camera::closest_hit(ObjectView objects, const Ray& ray, Interval interval) const -> std::optional<Hit>
@@ -121,7 +133,7 @@ auto Camera::closest_hit(ObjectView objects, const Ray& ray, Interval interval) 
     return closest;
 }
 
-auto Camera::background(const Ray& ray) const -> glm::vec4
+auto Camera::ambient(const Ray& ray) const -> glm::vec4
 {
     static constexpr auto blue = glm::vec3{ 0.5f, 0.7f, 1.0f };
     static constexpr auto white = glm::vec3{ 1.0f };
