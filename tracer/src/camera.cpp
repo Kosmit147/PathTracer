@@ -99,9 +99,9 @@ auto Camera::sample_unit_square() const -> glm::dvec2
 auto Camera::ray_color(const Ray& ray, ObjectView world, usize max_depth) const -> glm::vec4
 {
     if (max_depth == 0)
-        return ambient(ray);
+        return glm::vec4{ 0.0f };
 
-    if (auto hit = closest_hit(world, ray))
+    if (auto hit = closest_hit(world, ray, Interval{ .min = 0.001, .max = +infinity }))
     {
         static constexpr auto material_color = glm::vec4{ 0.5f, 0.5f, 0.5f, 1.0f };
 

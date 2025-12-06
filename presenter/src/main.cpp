@@ -113,8 +113,8 @@ void main()
 })"
 };
 
-constexpr u32 image_width = 1920;
-constexpr u32 image_height = 1080;
+constexpr u32 image_width = 640;
+constexpr u32 image_height = 360;
 constexpr u32 image_size = image_width * image_height;
 
 constexpr u32 window_width = 1920;
@@ -254,7 +254,7 @@ auto main() -> int
     glTextureParameteri(texture, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTextureParameteri(texture, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTextureParameteri(texture, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTextureParameteri(texture, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTextureParameteri(texture, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
     glTextureStorage2D(texture, 1, GL_RGBA8, image_width, image_height);
     constexpr static auto black = glm::vec4{ 0.0f, 0.0f, 0.0f, 1.0f };
