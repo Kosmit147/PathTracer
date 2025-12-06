@@ -51,11 +51,12 @@ private:
     [[nodiscard]] auto pixel_color(usize x, usize y, usize image_width, usize image_height, Viewport viewport,
                                    usize samples, usize max_depth, ObjectView world) const -> glm::vec4;
     [[nodiscard]] auto sample_pixel(const glm::dvec3& pixel_position, glm::dvec2 pixel_size) const -> Ray;
-    [[nodiscard]] auto sample_unit_square() const -> glm::dvec2;
-    [[nodiscard]] auto ray_color(const Ray& ray, ObjectView world, usize max_depth) const -> glm::vec4;
-    [[nodiscard]] auto closest_hit(ObjectView objects, const Ray& ray, Interval interval = Interval::non_negative) const
-        -> std::optional<Hit>;
-    [[nodiscard]] auto ambient(const Ray& ray) const -> glm::vec4;
+
+    [[nodiscard]] static auto ray_color(const Ray& ray, ObjectView world, usize max_depth) -> glm::vec4;
+    [[nodiscard]] static auto closest_hit(ObjectView objects, const Ray& ray,
+                                          Interval interval = Interval::non_negative) -> std::optional<Hit>;
+    [[nodiscard]] static auto sample_unit_square() -> glm::dvec2;
+    [[nodiscard]] static auto ambient(const Ray& ray) -> glm::vec4;
 
 private:
     glm::dvec3 _position{ 0.0 };
