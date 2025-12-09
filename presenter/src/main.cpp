@@ -125,6 +125,12 @@ const auto world = std::array<std::shared_ptr<const tracer::Object>, 2>{
     std::make_shared<tracer::Sphere>(glm::dvec3{ 0.0, -100.5, -1.0 }, 100.0)
 };
 
+// These values are updated by the progress callback on another thread. They're read only on the main thread only for
+// display in the ui, so we don't care about data races.
+i32 image_render_progress = 0;
+auto render_time_ms = 0.0;
+auto render_time_s = 0.0;
+
 } // namespace
 
 auto main() -> int
@@ -273,15 +279,17 @@ auto main() -> int
         timer.start();
 
         tracer::render(tracer::CameraParams{}, tracer::RenderParams{}, image_span, world, [](i32 progress) {
+            image_render_progress = progress;
+
             if (progress >= 100)
                 PRESENTER_INFO("Progress: Done!");
             else
                 PRESENTER_INFO("Progress: {}%", progress);
         });
 
-        auto time_ms = timer.elapsed_ms();
-        auto time_s = time_ms * 0.001;
-        PRESENTER_INFO("Took {:.4f}s ({:.4f}ms).", time_s, time_ms);
+        render_time_ms = timer.elapsed_ms();
+        render_time_s = render_time_ms * 0.001;
+        PRESENTER_INFO("Took {:.4f}s ({:.4f}ms).", render_time_s, render_time_ms);
     });
 
     glBindVertexArray(vertex_array);
@@ -304,7 +312,13 @@ auto main() -> int
             }
         }
 
-        ImGui::ShowDemoWindow();
+        ImGui::Begin("Path Tracer");
+
+        ImGui::ProgressBar(static_cast<float>(image_render_progress) / 100.0f);
+        ImGui::TextUnformatted("Render Progress");
+        ImGui::Text("Took %.4fs (%.4fms)", render_time_s, render_time_ms);
+
+        ImGui::End();
 
         glClear(GL_COLOR_BUFFER_BIT);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
