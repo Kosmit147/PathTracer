@@ -6,12 +6,20 @@ target_sources(
     presenter
 
     PRIVATE
-        src/assert.hpp
-        src/common.hpp
-        src/defer.hpp
-        src/log.hpp
+        src/gl/shader.cpp
         src/main.cpp
-        src/timer.hpp
+
+    PRIVATE
+        FILE_SET HEADERS
+        BASE_DIRS
+            src
+        FILES
+            src/gl/shader.hpp
+            src/assert.hpp
+            src/common.hpp
+            src/defer.hpp
+            src/log.hpp
+            src/timer.hpp
 )
 
 target_compile_features(presenter PRIVATE cxx_std_23)
@@ -27,6 +35,10 @@ endif()
 
 if(PT_OPENGL_DEBUG_CONTEXT)
     target_compile_definitions(presenter PRIVATE PT_OPENGL_DEBUG_CONTEXT)
+endif()
+
+if(PT_DEBUG_BREAKS)
+    target_compile_definitions(presenter PRIVATE PT_DEBUG_BREAKS)
 endif()
 
 target_link_libraries(presenter PRIVATE glad::glad)

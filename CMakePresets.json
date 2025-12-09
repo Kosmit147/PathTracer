@@ -31,7 +31,8 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
         "PT_ASSERTS": true,
-        "PT_OPENGL_DEBUG_CONTEXT": true
+        "PT_OPENGL_DEBUG_CONTEXT": true,
+        "PT_DEBUG_BREAKS": true
       }
     },
     {
@@ -40,7 +41,8 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "RelWithDebInfo",
         "PT_ASSERTS": true,
-        "PT_OPENGL_DEBUG_CONTEXT": true
+        "PT_OPENGL_DEBUG_CONTEXT": true,
+        "PT_DEBUG_BREAKS": true
       }
     },
     {
@@ -49,7 +51,8 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
         "PT_ASSERTS": false,
-        "PT_OPENGL_DEBUG_CONTEXT": false
+        "PT_OPENGL_DEBUG_CONTEXT": false,
+        "PT_DEBUG_BREAKS": false
       }
     }
   ],

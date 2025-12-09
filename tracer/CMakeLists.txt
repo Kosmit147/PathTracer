@@ -39,6 +39,10 @@ if(PT_ASSERTS)
     target_compile_definitions(tracer PUBLIC PT_ASSERTS)
 endif()
 
+if(PT_DEBUG_BREAKS)
+    target_compile_definitions(tracer PUBLIC PT_DEBUG_BREAKS)
+endif()
+
 target_link_libraries(tracer PUBLIC glm::glm)
 
 add_library(PathTracer::tracer ALIAS tracer)

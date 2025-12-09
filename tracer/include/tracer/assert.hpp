@@ -4,6 +4,28 @@
 #include <iostream>
 #include <source_location>
 
+#if defined(PT_DEBUG_BREAKS)
+
+    #if defined(_MSC_VER)
+
+        #define TRACER_DEBUG_BREAK __debugbreak()
+
+    #elif defined(__GNUC__)
+
+        #define TRACER_DEBUG_BREAK __builtin_trap()
+
+    #elif defined(__clang__)
+
+        #define TRACER_DEBUG_BREAK __builtin_debugtrap()
+
+    #endif
+
+#else
+
+    #define TRACER_DEBUG_BREAK ((void)(0))
+
+#endif
+
 #define TRACER_ASSERT_IMPL(...)                                                                                        \
     do                                                                                                                 \
     {                                                                                                                  \
@@ -15,6 +37,7 @@
             std::cerr << source_location.file_name() << '(' << source_location.line() << ':'                           \
                       << source_location.column() << ") `" << source_location.function_name()                          \
                       << "`:\nAssertion failed: (" << #__VA_ARGS__ << ")\n";                                           \
+            TRACER_DEBUG_BREAK;                                                                                        \
             std::abort();                                                                                              \
         }                                                                                                              \
     } while (false)

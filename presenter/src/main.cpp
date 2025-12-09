@@ -23,6 +23,7 @@
 #include "assert.hpp"
 #include "common.hpp"
 #include "defer.hpp"
+#include "gl/shader.hpp"
 #include "log.hpp"
 #include "timer.hpp"
 
@@ -220,38 +221,7 @@ auto run() -> int
         ImGui::DestroyContext();
     } };
 
-    auto vertex_source_data = vertex_shader_source.c_str();
-    auto fragment_source_data = fragment_shader_source.c_str();
-
-    auto vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertex_shader, 1, &vertex_source_data, nullptr);
-    glCompileShader(vertex_shader);
-    GLint vertex_shader_is_compiled;
-    glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &vertex_shader_is_compiled);
-    PRESENTER_ASSERT(vertex_shader_is_compiled == GL_TRUE);
-    Defer delete_vertex_shader{ [&] { glDeleteShader(vertex_shader); } };
-
-    auto fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragment_shader, 1, &fragment_source_data, nullptr);
-    glCompileShader(fragment_shader);
-    GLint fragment_shader_is_compiled;
-    glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &fragment_shader_is_compiled);
-    PRESENTER_ASSERT(fragment_shader_is_compiled == GL_TRUE);
-    Defer delete_fragment_shader{ [&] { glDeleteShader(fragment_shader); } };
-
-    auto shader = glCreateProgram();
-    glAttachShader(shader, vertex_shader);
-    glAttachShader(shader, fragment_shader);
-    glLinkProgram(shader);
-    GLint shader_is_linked;
-    glGetProgramiv(shader, GL_LINK_STATUS, &shader_is_linked);
-    PRESENTER_ASSERT(shader_is_linked == GL_TRUE);
-
-    glDetachShader(shader, vertex_shader);
-    glDetachShader(shader, fragment_shader);
-    Defer delete_shader{ [&] { glDeleteProgram(shader); } };
-
-    glUseProgram(shader);
+    auto shader = gl::Shader{ vertex_shader_source, fragment_shader_source };
 
     GLuint texture;
     glCreateTextures(GL_TEXTURE_2D, 1, &texture);
@@ -293,6 +263,7 @@ auto run() -> int
     });
 
     glBindVertexArray(vertex_array);
+    shader.bind();
     glBindTextureUnit(0, texture);
 
     while (!glfwWindowShouldClose(window))
