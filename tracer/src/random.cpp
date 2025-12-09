@@ -6,6 +6,8 @@
 
 #include <random>
 
+#include "tracer/geometric.hpp"
+
 namespace tracer {
 
 namespace {
@@ -67,8 +69,7 @@ auto random_unit_dvec3() -> glm::dvec3
 
 auto random_unit_dvec3_on_hemisphere(const glm::dvec3& normal) -> glm::dvec3
 {
-    auto vec = random_unit_dvec3();
-    return glm::faceforward(vec, vec, normal);
+    return faceforward(random_unit_dvec3(), normal);
 }
 
 } // namespace tracer

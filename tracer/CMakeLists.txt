@@ -19,6 +19,7 @@ target_sources(
 		    include/tracer/assert.hpp
 		    include/tracer/camera.hpp
 		    include/tracer/common.hpp
+		    include/tracer/geometric.hpp
 		    include/tracer/numeric.hpp
 		    include/tracer/object.hpp
 		    include/tracer/random.hpp
