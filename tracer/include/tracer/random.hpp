@@ -13,6 +13,5 @@ namespace tracer {
 [[nodiscard]] auto random_dvec3() -> glm::dvec3;
 [[nodiscard]] auto random_dvec3(double min, double max) -> glm::dvec3;
 [[nodiscard]] auto random_unit_dvec3() -> glm::dvec3;
-[[nodiscard]] auto random_unit_dvec3_on_hemisphere(const glm::dvec3& normal) -> glm::dvec3;
 
 } // namespace tracer

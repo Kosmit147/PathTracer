@@ -10,6 +10,7 @@
 
 #include "tracer/assert.hpp"
 #include "tracer/common.hpp"
+#include "tracer/geometric.hpp"
 #include "tracer/numeric.hpp"
 #include "tracer/object.hpp"
 #include "tracer/random.hpp"
@@ -146,7 +147,7 @@ auto Camera::ambient(const Ray& ray) -> glm::vec4
 
 auto Camera::random_reflection(const glm::dvec3& normal) -> glm::dvec3
 {
-    return random_unit_dvec3_on_hemisphere(normal);
+    return faceforward(random_unit_dvec3(), normal);
 }
 
 auto Camera::lambertian_reflection(const glm::dvec3& normal) -> glm::dvec3

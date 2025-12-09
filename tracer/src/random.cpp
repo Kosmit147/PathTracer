@@ -6,38 +6,32 @@
 
 #include <random>
 
-#include "tracer/geometric.hpp"
-
 namespace tracer {
 
 namespace {
 
 auto generator = std::mt19937{};
-auto float_distribution = std::uniform_real_distribution{ 0.0f, 1.0f };
-auto double_distribution = std::uniform_real_distribution{ 0.0, 1.0 };
 
 } // namespace
 
 auto random_float() -> float
 {
-    return float_distribution(generator);
+    return random_float(0.0f, 1.0f);
 }
 
 auto random_float(float min, float max) -> float
 {
-    auto distribution = std::uniform_real_distribution{ min, max };
-    return distribution(generator);
+    return std::uniform_real_distribution{ min, max }(generator);
 }
 
 auto random_double() -> double
 {
-    return double_distribution(generator);
+    return random_double(0.0, 1.0);
 }
 
 auto random_double(double min, double max) -> double
 {
-    auto distribution = std::uniform_real_distribution{ min, max };
-    return distribution(generator);
+    return std::uniform_real_distribution{ min, max }(generator);
 }
 
 auto random_dvec3() -> glm::dvec3
@@ -65,11 +59,6 @@ auto random_unit_dvec3() -> glm::dvec3
                 return vec / length;
         }
     }
-}
-
-auto random_unit_dvec3_on_hemisphere(const glm::dvec3& normal) -> glm::dvec3
-{
-    return faceforward(random_unit_dvec3(), normal);
 }
 
 } // namespace tracer
