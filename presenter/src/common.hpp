@@ -2,6 +2,8 @@
 
 #include <cstdint>
 
+namespace presenter {
+
 using u8 = std::uint8_t;
 using u16 = std::uint16_t;
 using u32 = std::uint32_t;
@@ -16,3 +18,5 @@ using isize = i64;
 
 using f32 = float;
 using f64 = double;
+
+} // namespace presenter

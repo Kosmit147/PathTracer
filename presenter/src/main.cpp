@@ -26,6 +26,8 @@
 #include "log.hpp"
 #include "timer.hpp"
 
+namespace presenter {
+
 namespace {
 
 auto glfw_error_callback(int error_code, const char* description) -> void
@@ -131,9 +133,7 @@ i32 image_render_progress = 0;
 auto render_time_ms = 0.0;
 auto render_time_s = 0.0;
 
-} // namespace
-
-auto main() -> int
+auto run() -> int
 {
     // There's a bug in VS runtime that can cause the application to deadlock when it exits when using asynchronous
     // loggers. Calling spdlog::shutdown() prevents that.
@@ -315,7 +315,6 @@ auto main() -> int
         ImGui::Begin("Path Tracer");
 
         ImGui::ProgressBar(static_cast<float>(image_render_progress) / 100.0f);
-        ImGui::TextUnformatted("Render Progress");
         ImGui::Text("Took %.4fs (%.4fms)", render_time_s, render_time_ms);
 
         ImGui::End();
@@ -338,4 +337,13 @@ auto main() -> int
     }
 
     return EXIT_SUCCESS;
+}
+
+} // namespace
+
+} // namespace presenter
+
+auto main() -> int
+{
+    return presenter::run();
 }

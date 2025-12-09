@@ -4,6 +4,8 @@
 
 #include "common.hpp"
 
+namespace presenter {
+
 class Timer
 {
 public:
@@ -21,3 +23,5 @@ private:
             .count();
     }
 };
+
+} // namespace presenter

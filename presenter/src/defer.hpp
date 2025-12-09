@@ -4,10 +4,12 @@
 #include <functional>
 #include <utility>
 
+namespace presenter {
+
 template<std::regular_invocable F> class Defer
 {
 public:
-    Defer(F&& f) : _f{ std::forward<decltype(f)>(f) } {}
+    explicit Defer(F&& f) : _f{ std::forward<decltype(f)>(f) } {}
 
     ~Defer()
     {
@@ -26,3 +28,5 @@ private:
     const F _f;
     bool _dismissed{ false };
 };
+
+} // namespace presenter
