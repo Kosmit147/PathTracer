@@ -3,15 +3,15 @@ cmake_minimum_required(VERSION 4.1)
 add_executable(presenter)
 
 target_sources(
-	presenter
+    presenter
 
-	PRIVATE
-	    src/assert.hpp
-	    src/common.hpp
-	    src/defer.hpp
-	    src/log.hpp
-	    src/main.cpp
-	    src/timer.hpp
+    PRIVATE
+        src/assert.hpp
+        src/common.hpp
+        src/defer.hpp
+        src/log.hpp
+        src/main.cpp
+        src/timer.hpp
 )
 
 target_compile_features(presenter PRIVATE cxx_std_23)
