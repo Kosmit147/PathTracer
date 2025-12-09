@@ -301,15 +301,15 @@ auto main() -> int
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
+        // Continually update the displayed image as it's being rendered.
         if (render_result.valid())
         {
             using namespace std::chrono_literals;
 
             if (render_result.wait_for(1ms) == std::future_status::ready)
-            {
                 render_result.get();
-                glTextureSubImage2D(texture, 0, 0, 0, image_width, image_height, GL_RGBA, GL_FLOAT, image.data());
-            }
+
+            glTextureSubImage2D(texture, 0, 0, 0, image_width, image_height, GL_RGBA, GL_FLOAT, image.data());
         }
 
         ImGui::Begin("Path Tracer");
