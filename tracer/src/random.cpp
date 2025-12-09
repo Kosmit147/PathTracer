@@ -68,11 +68,7 @@ auto random_unit_dvec3() -> glm::dvec3
 auto random_unit_dvec3_on_hemisphere(const glm::dvec3& normal) -> glm::dvec3
 {
     auto vec = random_unit_dvec3();
-
-    if (glm::dot(vec, normal) <= 0.0)
-        vec = -vec;
-
-    return vec;
+    return glm::faceforward(vec, vec, normal);
 }
 
 } // namespace tracer
