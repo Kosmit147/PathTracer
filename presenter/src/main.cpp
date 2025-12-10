@@ -128,11 +128,36 @@ const auto world = std::array<std::shared_ptr<const tracer::Object>, 2>{
     std::make_shared<tracer::Sphere>(glm::dvec3{ 0.0, -100.5, -1.0 }, 100.0)
 };
 
-// These values are updated by the progress callback on another thread. They're read only on the main thread only for
-// display in the ui, so we don't care about data races.
-i32 image_render_progress = 0;
-auto render_time_ms = 0.0;
-auto render_time_s = 0.0;
+struct RenderFeedback
+{
+    // These values are updated by the progress callback on another thread. They're read only on the main thread only
+    // for display in the ui, so we don't care about data races.
+    i32 progress{ 0 };
+    double time_ms{ 0.0 };
+    double time_s{ 0.0 };
+};
+
+auto render_feedback = RenderFeedback{};
+
+// This function is meant to be run on another thread.
+auto render_image(tracer::ImageView image_view) -> void
+{
+    auto timer = Timer{};
+    timer.start();
+
+    tracer::render(tracer::CameraParams{}, tracer::RenderParams{}, image_view, world, [](i32 progress) {
+        render_feedback.progress = progress;
+
+        if (progress >= 100)
+            PRESENTER_INFO("Progress: Done!");
+        else
+            PRESENTER_INFO("Progress: {}%", progress);
+    });
+
+    render_feedback.time_ms = timer.elapsed_ms();
+    render_feedback.time_s = render_feedback.time_ms * 0.001;
+    PRESENTER_INFO("Took {:.4f}s ({:.4f}ms).", render_feedback.time_s, render_feedback.time_ms);
+}
 
 auto run() -> int
 {
@@ -236,27 +261,10 @@ auto run() -> int
     constexpr static auto black = glm::vec4{ 0.0f, 0.0f, 0.0f, 1.0f };
     glClearTexImage(texture, 0, GL_RGBA, GL_FLOAT, glm::value_ptr(black));
 
-    auto image = std::vector<glm::vec4>{};
-    image.resize(image_size);
+    auto image = std::vector{ image_size, glm::vec4{ 0.0f } };
     const auto image_span = std::mdspan{ image.data(), image_height, image_width };
 
-    auto render_result = std::async(std::launch::async, [image_span] {
-        auto timer = Timer{};
-        timer.start();
-
-        tracer::render(tracer::CameraParams{}, tracer::RenderParams{}, image_span, world, [](i32 progress) {
-            image_render_progress = progress;
-
-            if (progress >= 100)
-                PRESENTER_INFO("Progress: Done!");
-            else
-                PRESENTER_INFO("Progress: {}%", progress);
-        });
-
-        render_time_ms = timer.elapsed_ms();
-        render_time_s = render_time_ms * 0.001;
-        PRESENTER_INFO("Took {:.4f}s ({:.4f}ms).", render_time_s, render_time_ms);
-    });
+    auto render_result = std::async(std::launch::async, render_image, image_span);
 
     auto vertex_array = gl::VertexArray{};
 
@@ -283,8 +291,8 @@ auto run() -> int
 
         ImGui::Begin("Path Tracer");
 
-        ImGui::ProgressBar(static_cast<float>(image_render_progress) / 100.0f);
-        ImGui::Text("Took %.4fs (%.4fms)", render_time_s, render_time_ms);
+        ImGui::ProgressBar(static_cast<float>(render_feedback.progress) / 100.0f);
+        ImGui::Text("Took %.4fs (%.4fms)", render_feedback.time_s, render_feedback.time_ms);
 
         ImGui::End();
 
