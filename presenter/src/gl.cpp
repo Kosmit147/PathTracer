@@ -10,6 +10,21 @@
 
 namespace presenter::gl {
 
+VertexArray::VertexArray()
+{
+    glCreateVertexArrays(1, &_vertex_array_id);
+}
+
+VertexArray::~VertexArray()
+{
+    glDeleteVertexArrays(1, &_vertex_array_id);
+}
+
+auto VertexArray::bind() const -> void
+{
+    glBindVertexArray(_vertex_array_id);
+}
+
 Shader::Shader(const std::string& vertex_source, const std::string& fragment_source)
 {
     auto vertex_shader_sources = std::array<const GLchar*, 1>{ vertex_source.c_str() };

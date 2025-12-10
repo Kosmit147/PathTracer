@@ -6,6 +6,23 @@
 
 namespace presenter::gl {
 
+class VertexArray
+{
+public:
+    explicit VertexArray();
+    ~VertexArray();
+
+    VertexArray(const VertexArray&) = delete;
+    auto operator=(const VertexArray&) = delete;
+    VertexArray(VertexArray&&) = delete;
+    auto operator=(VertexArray&&) = delete;
+
+    auto bind() const -> void;
+
+private:
+    GLuint _vertex_array_id = GL_NONE;
+};
+
 class Shader
 {
 public:

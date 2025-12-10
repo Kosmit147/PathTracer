@@ -236,10 +236,6 @@ auto run() -> int
     constexpr static auto black = glm::vec4{ 0.0f, 0.0f, 0.0f, 1.0f };
     glClearTexImage(texture, 0, GL_RGBA, GL_FLOAT, glm::value_ptr(black));
 
-    GLuint vertex_array;
-    glCreateVertexArrays(1, &vertex_array);
-    Defer delete_vertex_array{ [&] { glDeleteVertexArrays(1, &vertex_array); } };
-
     auto image = std::vector<glm::vec4>{};
     image.resize(image_size);
     const auto image_span = std::mdspan{ image.data(), image_height, image_width };
@@ -262,7 +258,9 @@ auto run() -> int
         PRESENTER_INFO("Took {:.4f}s ({:.4f}ms).", render_time_s, render_time_ms);
     });
 
-    glBindVertexArray(vertex_array);
+    auto vertex_array = gl::VertexArray{};
+
+    vertex_array.bind();
     shader.bind();
     glBindTextureUnit(0, texture);
 
