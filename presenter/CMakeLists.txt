@@ -6,7 +6,7 @@ target_sources(
     presenter
 
     PRIVATE
-        src/gl/shader.cpp
+        src/gl.cpp
         src/main.cpp
 
     PRIVATE
@@ -14,10 +14,10 @@ target_sources(
         BASE_DIRS
             src
         FILES
-            src/gl/shader.hpp
             src/assert.hpp
             src/common.hpp
             src/defer.hpp
+            src/gl.hpp
             src/log.hpp
             src/timer.hpp
 )

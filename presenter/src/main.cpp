@@ -23,7 +23,7 @@
 #include "assert.hpp"
 #include "common.hpp"
 #include "defer.hpp"
-#include "gl/shader.hpp"
+#include "gl.hpp"
 #include "log.hpp"
 #include "timer.hpp"
 
