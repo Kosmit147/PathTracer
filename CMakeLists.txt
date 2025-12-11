@@ -13,11 +13,11 @@ project(
     LANGUAGES C CXX
 )
 
-add_subdirectory(libs/glad)
-add_subdirectory(libs/glfw)
-add_subdirectory(libs/glm)
-add_subdirectory(libs/imgui)
-add_subdirectory(libs/spdlog)
+add_subdirectory(libs/glad SYSTEM)
+add_subdirectory(libs/glfw SYSTEM)
+add_subdirectory(libs/glm SYSTEM)
+add_subdirectory(libs/imgui SYSTEM)
+add_subdirectory(libs/spdlog SYSTEM)
 
 add_subdirectory(tracer)
 

@@ -6,28 +6,42 @@
   },
   "configurePresets": [
     {
-      "name": "base",
+      "name": "compiler-msvc",
       "hidden": true,
       "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "cl",
+        "CMAKE_CXX_COMPILER": "cl",
+        "PT_COMPILE_FLAGS": "/W4;/w14242;/w14254;/w14263;/w14265;/w14287;/we4289;/w14296;/w14311;/w14545;/w14546;/w14547;/w14549;/w14555;/w14619;/w14640;/w14826;/w14905;/w14906;/w14928"
+      }
+    },
+    {
+      "name": "compiler-clang",
+      "hidden": true,
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++",
+        "PT_COMPILE_FLAGS": "-Wall;-Wextra;-Wshadow;-Wnon-virtual-dtor;-Wold-style-cast;-Wcast-align;-Wunused;-Woverloaded-virtual;-Wpedantic;-Wconversion;-Wsign-conversion;-Wnull-dereference;-Wdouble-promotion;-Wformat=2;-Wimplicit-fallthrough"
+      }
+    },
+    {
+      "name": "base-config",
+      "hidden": true,
       "binaryDir": "${sourceDir}/out/build/${presetName}",
       "installDir": "${sourceDir}/out/install/${presetName}",
-      "environment": {
-        "CC": "cl",
-        "CXX": "cl",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "TRUE"
-      },
       "cacheVariables": {
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "TRUE",
         "CMAKE_C_STANDARD": "11",
         "CMAKE_CXX_STANDARD": "23",
         "BUILD_SHARED_LIBS": false,
-
-        "PT_COMPILE_FLAGS": "/W4;/w14242;/w14254;/w14263;/w14265;/w14287;/we4289;/w14296;/w14311;/w14545;/w14546;/w14547;/w14549;/w14555;/w14619;/w14640;/w14826;/w14905;/w14906;/w14928",
         "PT_WARNING_AS_ERROR": true
       }
     },
     {
-      "name": "Debug",
-      "inherits": "base",
+      "name": "base-debug",
+      "hidden": true,
+      "inherits": "base-config",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
         "PT_ASSERTS": true,
@@ -36,8 +50,9 @@
       }
     },
     {
-      "name": "Development",
-      "inherits": "base",
+      "name": "base-development",
+      "hidden": true,
+      "inherits": "base-config",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "RelWithDebInfo",
         "PT_ASSERTS": true,
@@ -46,28 +61,66 @@
       }
     },
     {
-      "name": "Release",
-      "inherits": "base",
+      "name": "base-release",
+      "hidden": true,
+      "inherits": "base-config",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_INTERPROCEDURAL_OPTIMIZATION": true,
         "PT_ASSERTS": false,
         "PT_OPENGL_DEBUG_CONTEXT": false,
         "PT_DEBUG_BREAKS": false
       }
+    },
+    {
+      "name": "msvc-debug",
+      "inherits": [ "compiler-msvc", "base-debug"]
+    },
+    {
+      "name": "msvc-development",
+      "inherits": [ "compiler-msvc", "base-development"]
+    },
+    {
+      "name": "msvc-release",
+      "inherits": [ "compiler-msvc", "base-release"]
+    },
+    {
+      "name": "clang-debug",
+      "inherits": [ "compiler-clang", "base-debug"]
+    },
+    {
+      "name": "clang-development",
+      "inherits": [ "compiler-clang", "base-development"]
+    },
+    {
+      "name": "clang-release",
+      "inherits": [ "compiler-clang", "base-release"]
     }
   ],
   "buildPresets": [
     {
-      "name": "Debug",
-      "configurePreset": "Debug"
+      "name": "msvc-debug",
+      "configurePreset": "msvc-debug"
     },
     {
-      "name": "Development",
-      "configurePreset": "Development"
+      "name": "msvc-development",
+      "configurePreset": "msvc-development"
     },
     {
-      "name": "Release",
-      "configurePreset": "Release"
+      "name": "msvc-release",
+      "configurePreset": "msvc-release"
+    },
+    {
+      "name": "clang-debug",
+      "configurePreset": "clang-debug"
+    },
+    {
+      "name": "clang-development",
+      "configurePreset": "clang-development"
+    },
+    {
+      "name": "clang-release",
+      "configurePreset": "clang-release"
     }
   ]
 }

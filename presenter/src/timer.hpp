@@ -17,7 +17,7 @@ private:
     std::chrono::time_point<std::chrono::high_resolution_clock> _start;
 
 private:
-    [[nodiscard]] auto time() const -> usize
+    [[nodiscard]] auto time() const -> isize
     {
         return std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - _start)
             .count();
