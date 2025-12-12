@@ -271,6 +271,7 @@ auto run() -> int
 
     auto render_image_stop_source = std::stop_source{};
     auto render_result = std::async(std::launch::async, render_image, image_view, render_image_stop_source.get_token());
+    Defer request_render_image_stop{ [&] { render_image_stop_source.request_stop(); } };
 
     auto vertex_array = gl::VertexArray{};
 
@@ -300,8 +301,19 @@ auto run() -> int
         ImGui::ProgressBar(static_cast<float>(render_feedback.progress) / 100.0f);
         ImGui::Text("Took %.4fs (%.4fms)", render_feedback.time_s, render_feedback.time_ms);
 
-        if (ImGui::Button("Cancel"))
+        if (ImGui::Button("Generate"))
+        {
+            // Make sure the current render job stops.
             render_image_stop_source.request_stop();
+
+            if (render_result.valid())
+                render_result.get();
+
+            render_image_stop_source = std::stop_source{};
+
+            render_result =
+                std::async(std::launch::async, render_image, image_view, render_image_stop_source.get_token());
+        }
 
         ImGui::End();
 
