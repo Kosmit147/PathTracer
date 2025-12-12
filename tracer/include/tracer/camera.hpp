@@ -8,6 +8,7 @@
 #include <memory>
 #include <optional>
 #include <span>
+#include <stop_token>
 
 #include "tracer/common.hpp"
 #include "tracer/numeric.hpp"
@@ -45,7 +46,7 @@ public:
 
     auto render(
         const ImageView& image, ObjectView world, const RenderParams& render_params,
-        ProgressCallback progress_callback = [](i32) {}) const -> void;
+        ProgressCallback progress_callback = [](i32) {}, std::stop_token stop_token = std::stop_token{}) const -> void;
 
 private:
     [[nodiscard]] auto pixel_color(usize x, usize y, usize image_width, usize image_height, Viewport viewport,

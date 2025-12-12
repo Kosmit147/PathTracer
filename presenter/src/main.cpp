@@ -17,7 +17,9 @@
 #include <future>
 #include <mdspan>
 #include <memory>
+#include <stop_token>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "assert.hpp"
@@ -140,19 +142,22 @@ struct RenderFeedback
 auto render_feedback = RenderFeedback{};
 
 // This function is meant to be run on another thread.
-auto render_image(tracer::ImageView image_view) -> void
+auto render_image(tracer::ImageView image_view, std::stop_token stop_token) -> void
 {
     auto timer = Timer{};
     timer.start();
 
-    tracer::render(tracer::CameraParams{}, tracer::RenderParams{}, image_view, world, [](i32 progress) {
-        render_feedback.progress = progress;
+    tracer::render(
+        tracer::CameraParams{}, tracer::RenderParams{}, image_view, world,
+        [](i32 progress) {
+            render_feedback.progress = progress;
 
-        if (progress >= 100)
-            PRESENTER_INFO("Progress: Done!");
-        else
-            PRESENTER_INFO("Progress: {}%", progress);
-    });
+            if (progress >= 100)
+                PRESENTER_INFO("Progress: Done!");
+            else
+                PRESENTER_INFO("Progress: {}%", progress);
+        },
+        std::move(stop_token));
 
     render_feedback.time_ms = timer.elapsed_ms();
     render_feedback.time_s = render_feedback.time_ms * 0.001;
@@ -262,9 +267,10 @@ auto run() -> int
     glClearTexImage(texture, 0, GL_RGBA, GL_FLOAT, glm::value_ptr(black));
 
     auto image = std::vector{ image_size, glm::vec4{ 0.0f } };
-    const auto image_span = std::mdspan{ image.data(), image_height, image_width };
+    const auto image_view = std::mdspan{ image.data(), image_height, image_width };
 
-    auto render_result = std::async(std::launch::async, render_image, image_span);
+    auto render_image_stop_source = std::stop_source{};
+    auto render_result = std::async(std::launch::async, render_image, image_view, render_image_stop_source.get_token());
 
     auto vertex_array = gl::VertexArray{};
 
@@ -293,6 +299,9 @@ auto run() -> int
 
         ImGui::ProgressBar(static_cast<float>(render_feedback.progress) / 100.0f);
         ImGui::Text("Took %.4fs (%.4fms)", render_feedback.time_s, render_feedback.time_ms);
+
+        if (ImGui::Button("Cancel"))
+            render_image_stop_source.request_stop();
 
         ImGui::End();
 

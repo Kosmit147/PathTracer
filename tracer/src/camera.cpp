@@ -7,6 +7,7 @@
 #include <glm/vec4.hpp>
 
 #include <optional>
+#include <stop_token>
 
 #include "tracer/assert.hpp"
 #include "tracer/common.hpp"
@@ -21,7 +22,7 @@ namespace tracer {
 Camera::Camera(const CameraParams& params) : _position{ params.position }, _focal_length{ params.focal_length } {}
 
 auto Camera::render(const ImageView& image, ObjectView world, const RenderParams& render_params,
-                    ProgressCallback progress_callback) const -> void
+                    ProgressCallback progress_callback, std::stop_token stop_token) const -> void
 {
     const auto image_height = image.extent(0);
     const auto image_width = image.extent(1);
@@ -49,8 +50,13 @@ auto Camera::render(const ImageView& image, ObjectView world, const RenderParams
         }
 
         for (usize x = 0; x < image_width; x++)
+        {
             image[y, x] = pixel_color(x, y, image_width, image_height, viewport, render_params.samples,
                                       render_params.max_depth, world);
+        }
+
+        if (stop_token.stop_requested())
+            return;
     }
 
     progress_callback(100);
