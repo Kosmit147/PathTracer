@@ -12,6 +12,22 @@
       "cacheVariables": {
         "CMAKE_C_COMPILER": "cl",
         "CMAKE_CXX_COMPILER": "cl",
+
+        "CMAKE_C_FLAGS": "/EHsc",
+        "CMAKE_CXX_FLAGS": "/EHsc",
+
+        "CMAKE_C_FLAGS_DEBUG": "/Od /Ob0 -Zi -RTC1 /D_DEBUG",
+        "CMAKE_CXX_FLAGS_DEBUG": "/Od /Ob0 -Zi -RTC1 /D_DEBUG",
+
+        "CMAKE_C_FLAGS_DEVELOPMENT": "/O2 /Ob1 -Zi /DNDEBUG",
+        "CMAKE_CXX_FLAGS_DEVELOPMENT": "/O2 /Ob1 -Zi /DNDEBUG",
+
+        "CMAKE_C_FLAGS_RELEASE": "/O2 /Ob2 /GL -Zi /DNDEBUG",
+        "CMAKE_CXX_FLAGS_RELEASE": "/O2 /Ob2 /GL -Zi /DNDEBUG",
+
+        "CMAKE_C_FLAGS_DISTRIBUTION": "/O2 /Ob2 /GL /DNDEBUG",
+        "CMAKE_CXX_FLAGS_DISTRIBUTION": "/O2 /Ob2 /GL /DNDEBUG",
+
         "PT_COMPILE_FLAGS": "/W4;/w14242;/w14254;/w14263;/w14265;/w14287;/we4289;/w14296;/w14311;/w14545;/w14546;/w14547;/w14549;/w14555;/w14619;/w14640;/w14826;/w14905;/w14906;/w14928"
       }
     },
@@ -22,6 +38,22 @@
       "cacheVariables": {
         "CMAKE_C_COMPILER": "clang",
         "CMAKE_CXX_COMPILER": "clang++",
+
+        "CMAKE_C_FLAGS": "",
+        "CMAKE_CXX_FLAGS": "",
+
+        "CMAKE_C_FLAGS_DEBUG": "-O0 -g -D_DEBUG",
+        "CMAKE_CXX_FLAGS_DEBUG": "-O0 -g -D_DEBUG",
+
+        "CMAKE_C_FLAGS_DEVELOPMENT": "-O2 -g -DNDEBUG",
+        "CMAKE_CXX_FLAGS_DEVELOPMENT": "-O2 -g -DNDEBUG",
+
+        "CMAKE_C_FLAGS_RELEASE": "-O3 -flto=thin -g -DNDEBUG",
+        "CMAKE_CXX_FLAGS_RELEASE": "-O3 -flto=thin -g -DNDEBUG",
+
+        "CMAKE_C_FLAGS_DISTRIBUTION": "-O3 -flto=thin -DNDEBUG",
+        "CMAKE_CXX_FLAGS_DISTRIBUTION": "-O3 -flto=thin -DNDEBUG",
+
         "PT_COMPILE_FLAGS": "-Wall;-Wextra;-Wshadow;-Wnon-virtual-dtor;-Wold-style-cast;-Wcast-align;-Wunused;-Woverloaded-virtual;-Wpedantic;-Wconversion;-Wsign-conversion;-Wnull-dereference;-Wdouble-promotion;-Wformat=2;-Wimplicit-fallthrough"
       }
     },
@@ -54,7 +86,7 @@
       "hidden": true,
       "inherits": "base-config",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "CMAKE_BUILD_TYPE": "Development",
         "PT_ASSERTS": true,
         "PT_OPENGL_DEBUG_CONTEXT": true,
         "PT_DEBUG_BREAKS": true
@@ -66,7 +98,17 @@
       "inherits": "base-config",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
-        "CMAKE_INTERPROCEDURAL_OPTIMIZATION": true,
+        "PT_ASSERTS": false,
+        "PT_OPENGL_DEBUG_CONTEXT": false,
+        "PT_DEBUG_BREAKS": false
+      }
+    },
+    {
+      "name": "base-distribution",
+      "hidden": true,
+      "inherits": "base-config",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Distribution",
         "PT_ASSERTS": false,
         "PT_OPENGL_DEBUG_CONTEXT": false,
         "PT_DEBUG_BREAKS": false
@@ -85,6 +127,10 @@
       "inherits": [ "compiler-msvc", "base-release"]
     },
     {
+      "name": "msvc-distribution",
+      "inherits": [ "compiler-msvc", "base-distribution"]
+    },
+    {
       "name": "clang-debug",
       "inherits": [ "compiler-clang", "base-debug"]
     },
@@ -95,6 +141,10 @@
     {
       "name": "clang-release",
       "inherits": [ "compiler-clang", "base-release"]
+    },
+    {
+      "name": "clang-distribution",
+      "inherits": [ "compiler-clang", "base-distribution"]
     }
   ],
   "buildPresets": [
@@ -111,6 +161,10 @@
       "configurePreset": "msvc-release"
     },
     {
+      "name": "msvc-distribution",
+      "configurePreset": "msvc-distribution"
+    },
+    {
       "name": "clang-debug",
       "configurePreset": "clang-debug"
     },
@@ -121,6 +175,10 @@
     {
       "name": "clang-release",
       "configurePreset": "clang-release"
+    },
+    {
+      "name": "clang-distribution",
+      "configurePreset": "clang-distribution"
     }
   ]
 }
