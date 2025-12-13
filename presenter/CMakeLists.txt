@@ -46,6 +46,8 @@ target_link_libraries(presenter PRIVATE glfw)
 target_link_libraries(presenter PRIVATE glm::glm)
 target_link_libraries(presenter PRIVATE PathTracer::imgui)
 target_link_libraries(presenter PRIVATE spdlog::spdlog)
+target_link_libraries(presenter PRIVATE PathTracer::stb)
+
 target_link_libraries(presenter PRIVATE PathTracer::tracer)
 
 add_executable(PathTracer::presenter ALIAS presenter)
