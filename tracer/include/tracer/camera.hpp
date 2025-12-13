@@ -62,6 +62,8 @@ private:
     [[nodiscard]] static auto random_reflection(const glm::dvec3& normal) -> glm::dvec3;
     [[nodiscard]] static auto lambertian_reflection(const glm::dvec3& normal) -> glm::dvec3;
 
+    [[nodiscard]] static auto gamma_correction(glm::vec4 linear_space_color) -> glm::vec4;
+
 private:
     glm::dvec3 _position{ 0.0 };
     double _focal_length{ 1.0 };

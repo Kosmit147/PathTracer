@@ -282,7 +282,7 @@ auto run() -> int
             if (render_result.wait_for(1ms) == std::future_status::ready)
                 render_result.get();
 
-            texture.upload(std::span{ image });
+            texture.upload(image);
         }
 
         ImGui::Begin("Path Tracer");

@@ -1,6 +1,7 @@
 #include "tracer/camera.hpp"
 
 #include <glm/common.hpp>
+#include <glm/exponential.hpp>
 #include <glm/geometric.hpp>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
@@ -85,8 +86,10 @@ auto Camera::pixel_color(usize x, usize y, usize image_width, usize image_height
 
     TRACER_ASSERT(samples != 0);
     color /= static_cast<float>(samples);
+    color = gamma_correction(color);
+    color = glm::clamp(color, glm::vec4{ 0.0f }, glm::vec4{ 1.0f });
 
-    return glm::clamp(color, glm::vec4{ 0.0f }, glm::vec4{ 1.0f });
+    return color;
 }
 
 auto Camera::sample_pixel(const glm::dvec3& pixel_position, glm::dvec2 pixel_size) const -> Ray
@@ -160,6 +163,16 @@ auto Camera::lambertian_reflection(const glm::dvec3& normal) -> glm::dvec3
 {
     // Pick a random point on a unit sphere tangent to the intersection point.
     return glm::normalize(normal + random_unit_dvec3());
+}
+
+auto Camera::gamma_correction(glm::vec4 linear_space_color) -> glm::vec4
+{
+    // We're using a gamma value of 2.0, therefore the inverse is just the square root.
+    auto rgb = glm::vec3{ linear_space_color };
+    // Clamp negative rgb values.
+    rgb = glm::clamp(rgb, glm::vec3{ 0.0f }, glm::vec3{ 1.0f });
+    auto corrected_rgb = glm::sqrt(rgb);
+    return glm::vec4{ corrected_rgb, linear_space_color.a };
 }
 
 } // namespace tracer
