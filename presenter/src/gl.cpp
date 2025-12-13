@@ -1,11 +1,15 @@
 #include "gl.hpp"
 
 #include <glad/glad.h>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/vec4.hpp>
 
 #include <array>
+#include <span>
 #include <string>
 
 #include "assert.hpp"
+#include "common.hpp"
 #include "defer.hpp"
 
 namespace presenter::gl {
@@ -66,6 +70,49 @@ Shader::~Shader()
 auto Shader::bind() const -> void
 {
     glUseProgram(_program_id);
+}
+
+Texture::Texture(u32 width, u32 height)
+{
+    GLuint texture;
+    glCreateTextures(GL_TEXTURE_2D, 1, &texture);
+
+    glTextureParameteri(texture, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTextureParameteri(texture, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTextureParameteri(texture, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTextureParameteri(texture, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    glTextureStorage2D(texture, 1, GL_RGBA8, static_cast<GLsizei>(width), static_cast<GLsizei>(height));
+
+    _texture_id = texture;
+    _width = width;
+    _height = height;
+}
+
+Texture::~Texture()
+{
+    glDeleteTextures(1, &_texture_id);
+}
+
+auto Texture::bind(u32 slot) const -> void
+{
+    glBindTextureUnit(slot, _texture_id);
+}
+
+auto Texture::upload(std::span<const glm::vec4> pixels) -> void
+{
+    PRESENTER_ASSERT(pixels.size() == static_cast<usize>(_width) * static_cast<usize>(_height));
+    PRESENTER_ASSERT(pixels.size_bytes()
+                     == static_cast<usize>(_width) * static_cast<usize>(_height) * sizeof(GLfloat) * 4);
+
+    glTextureSubImage2D(_texture_id, 0, 0, 0, static_cast<GLsizei>(_width), static_cast<GLsizei>(_height), GL_RGBA,
+                        GL_FLOAT, pixels.data());
+}
+
+auto Texture::clear() -> void
+{
+    constexpr static auto black = glm::vec4{ 0.0f, 0.0f, 0.0f, 1.0f };
+    glClearTexImage(_texture_id, 0, GL_RGBA, GL_FLOAT, glm::value_ptr(black));
 }
 
 } // namespace presenter::gl

@@ -1,8 +1,12 @@
 #pragma once
 
 #include <glad/glad.h>
+#include <glm/vec4.hpp>
 
+#include <span>
 #include <string>
+
+#include "common.hpp"
 
 namespace presenter::gl {
 
@@ -38,6 +42,30 @@ public:
 
 private:
     GLuint _program_id = GL_NONE;
+};
+
+class Texture
+{
+public:
+    explicit Texture(u32 width, u32 height);
+    ~Texture();
+
+    Texture(const Texture&) = delete;
+    auto operator=(const Texture&) = delete;
+    Texture(Texture&&) = delete;
+    auto operator=(Texture&&) = delete;
+
+    auto bind(u32 slot) const -> void;
+    auto upload(std::span<const glm::vec4> pixels) -> void;
+    auto clear() -> void;
+
+    [[nodiscard]] auto width() const -> auto { return _width; }
+    [[nodiscard]] auto height() const -> auto { return _height; }
+
+private:
+    GLuint _texture_id = GL_NONE;
+    u32 _width = 0;
+    u32 _height = 0;
 };
 
 } // namespace presenter::gl

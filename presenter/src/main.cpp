@@ -2,7 +2,6 @@
 #include <GLFW/glfw3.h>
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
-#include <glm/gtc/type_ptr.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 #include <imgui.h>
@@ -17,6 +16,7 @@
 #include <future>
 #include <mdspan>
 #include <memory>
+#include <span>
 #include <stop_token>
 #include <string>
 #include <utility>
@@ -252,19 +252,8 @@ auto run() -> int
     } };
 
     auto shader = gl::Shader{ vertex_shader_source, fragment_shader_source };
-
-    GLuint texture;
-    glCreateTextures(GL_TEXTURE_2D, 1, &texture);
-    Defer delete_texture{ [&] { glDeleteTextures(1, &texture); } };
-
-    glTextureParameteri(texture, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTextureParameteri(texture, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTextureParameteri(texture, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTextureParameteri(texture, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-    glTextureStorage2D(texture, 1, GL_RGBA8, image_width, image_height);
-    constexpr static auto black = glm::vec4{ 0.0f, 0.0f, 0.0f, 1.0f };
-    glClearTexImage(texture, 0, GL_RGBA, GL_FLOAT, glm::value_ptr(black));
+    auto texture = gl::Texture{ image_width, image_height };
+    texture.clear();
 
     auto image = std::vector{ image_size, glm::vec4{ 0.0f } };
     const auto image_view = std::mdspan{ image.data(), image_height, image_width };
@@ -277,7 +266,7 @@ auto run() -> int
 
     vertex_array.bind();
     shader.bind();
-    glBindTextureUnit(0, texture);
+    texture.bind(0);
 
     while (!glfwWindowShouldClose(window))
     {
@@ -293,7 +282,7 @@ auto run() -> int
             if (render_result.wait_for(1ms) == std::future_status::ready)
                 render_result.get();
 
-            glTextureSubImage2D(texture, 0, 0, 0, image_width, image_height, GL_RGBA, GL_FLOAT, image.data());
+            texture.upload(std::span{ image });
         }
 
         ImGui::Begin("Path Tracer");
