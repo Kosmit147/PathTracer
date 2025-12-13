@@ -21,7 +21,7 @@ using ProgressCallback = void (*)(i32);
 using ImageView = std::mdspan<glm::vec4, std::dextents<usize, 2>>;
 using ObjectView = std::span<const std::shared_ptr<const Object>>;
 
-struct CameraParams
+struct Camera
 {
     glm::dvec3 position{ 0.0 };
     double focal_length{ 1.0 };
@@ -39,18 +39,17 @@ struct RenderParams
     usize max_depth{ 50 };
 };
 
-class Camera
+class Renderer
 {
 public:
-    explicit Camera(const CameraParams& params = {});
+    explicit Renderer(const ImageView& image, const Camera& camera = {}, const RenderParams& render_params = {});
 
     auto render(
-        const ImageView& image, ObjectView world, const RenderParams& render_params,
-        ProgressCallback progress_callback = [](i32) {}, std::stop_token stop_token = std::stop_token{}) const -> void;
+        ObjectView world, ProgressCallback progress_callback = [](i32) {},
+        std::stop_token stop_token = std::stop_token{}) const -> void;
 
 private:
-    [[nodiscard]] auto pixel_color(usize x, usize y, usize image_width, usize image_height, Viewport viewport,
-                                   usize samples, usize max_depth, ObjectView world) const -> glm::vec4;
+    [[nodiscard]] auto pixel_color(usize x, usize y, ObjectView world) const -> glm::vec4;
     [[nodiscard]] auto sample_pixel(const glm::dvec3& pixel_position, glm::dvec2 pixel_size) const -> Ray;
 
     [[nodiscard]] static auto ray_color(const Ray& ray, ObjectView world, usize max_depth) -> glm::vec4;
@@ -64,9 +63,18 @@ private:
 
     [[nodiscard]] static auto gamma_correction(glm::vec4 linear_space_color) -> glm::vec4;
 
+    [[nodiscard]] auto image_height() const -> auto { return _image.extent(0); }
+    [[nodiscard]] auto image_width() const -> auto { return _image.extent(1); }
+
 private:
-    glm::dvec3 _position{ 0.0 };
-    double _focal_length{ 1.0 };
+    ImageView _image{};
+    Camera _camera{};
+    RenderParams _render_params{};
+    Viewport _viewport{};
 };
+
+auto render(
+    const ImageView& image, ObjectView world, const Camera& camera = {}, const RenderParams& render_params = {},
+    ProgressCallback progress_callback = [](i32) {}, std::stop_token stop_token = std::stop_token{}) -> void;
 
 } // namespace tracer

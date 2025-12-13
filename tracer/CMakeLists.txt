@@ -6,10 +6,9 @@ target_sources(
     tracer
 
     PRIVATE
-        src/camera.cpp
         src/object.cpp
         src/random.cpp
-        src/render.cpp
+        src/renderer.cpp
 
     PUBLIC
         FILE_SET HEADERS
@@ -17,14 +16,13 @@ target_sources(
             include
         FILES
             include/tracer/assert.hpp
-            include/tracer/camera.hpp
             include/tracer/common.hpp
             include/tracer/geometric.hpp
             include/tracer/numeric.hpp
             include/tracer/object.hpp
             include/tracer/random.hpp
             include/tracer/ray.hpp
-            include/tracer/render.hpp
+            include/tracer/renderer.hpp
             include/tracer/trigonometric.hpp
 )
 

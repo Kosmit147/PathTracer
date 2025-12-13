@@ -1,4 +1,4 @@
-#include "tracer/camera.hpp"
+#include "tracer/renderer.hpp"
 
 #include <glm/common.hpp>
 #include <glm/exponential.hpp>
@@ -9,6 +9,7 @@
 
 #include <optional>
 #include <stop_token>
+#include <utility>
 
 #include "tracer/assert.hpp"
 #include "tracer/common.hpp"
@@ -20,29 +21,27 @@
 
 namespace tracer {
 
-Camera::Camera(const CameraParams& params) : _position{ params.position }, _focal_length{ params.focal_length } {}
-
-auto Camera::render(const ImageView& image, ObjectView world, const RenderParams& render_params,
-                    ProgressCallback progress_callback, std::stop_token stop_token) const -> void
+Renderer::Renderer(const ImageView& image, const Camera& camera, const RenderParams& render_params)
+    : _image{ image }, _camera{ camera }, _render_params{ render_params }
 {
-    const auto image_height = image.extent(0);
-    const auto image_width = image.extent(1);
-
-    const auto aspect_ratio = static_cast<double>(image_width) / static_cast<double>(image_height);
+    const auto aspect_ratio = static_cast<double>(image_width()) / static_cast<double>(image_height());
 
     const auto viewport_height = 2.0;
     const auto viewport_width = aspect_ratio * viewport_height;
 
-    const auto viewport = Viewport{
+    _viewport = Viewport{
         .width = viewport_width,
         .height = viewport_height,
     };
+}
 
+auto Renderer::render(ObjectView world, ProgressCallback progress_callback, std::stop_token stop_token) const -> void
+{
     i32 progress = -1;
 
-    for (usize y = 0; y < image_height; y++)
+    for (usize y = 0; y < image_height(); y++)
     {
-        auto new_progress = static_cast<i32>(static_cast<float>(y) / static_cast<float>(image_height) * 100.0f);
+        auto new_progress = static_cast<i32>(static_cast<float>(y) / static_cast<float>(image_height()) * 100.0f);
 
         if (new_progress != progress)
         {
@@ -50,11 +49,8 @@ auto Camera::render(const ImageView& image, ObjectView world, const RenderParams
             progress_callback(progress);
         }
 
-        for (usize x = 0; x < image_width; x++)
-        {
-            image[y, x] = pixel_color(x, y, image_width, image_height, viewport, render_params.samples,
-                                      render_params.max_depth, world);
-        }
+        for (usize x = 0; x < image_width(); x++)
+            _image[y, x] = pixel_color(x, y, world);
 
         if (stop_token.stop_requested())
             return;
@@ -63,45 +59,44 @@ auto Camera::render(const ImageView& image, ObjectView world, const RenderParams
     progress_callback(100);
 }
 
-auto Camera::pixel_color(usize x, usize y, usize image_width, usize image_height, Viewport viewport, usize samples,
-                         usize max_depth, ObjectView world) const -> glm::vec4
+auto Renderer::pixel_color(usize x, usize y, ObjectView world) const -> glm::vec4
 {
     const auto pixel_x_position =
-        ((static_cast<double>(x) + 0.5) / static_cast<double>(image_width) - 0.5) * viewport.width;
+        ((static_cast<double>(x) + 0.5) / static_cast<double>(image_width()) - 0.5) * _viewport.width;
     const auto pixel_y_position =
-        -(((static_cast<double>(y) + 0.5) / static_cast<double>(image_height) - 0.5) * viewport.height);
+        -(((static_cast<double>(y) + 0.5) / static_cast<double>(image_height()) - 0.5) * _viewport.height);
 
-    TRACER_ASSERT(_focal_length != 0.0);
-    const auto pixel_position = glm::dvec3{ pixel_x_position, pixel_y_position, -_focal_length };
-    const auto pixel_size = glm::dvec2{ viewport.width / static_cast<double>(image_width),
-                                        viewport.height / static_cast<double>(image_height) };
+    TRACER_ASSERT(_camera.focal_length != 0.0);
+    const auto pixel_position = glm::dvec3{ pixel_x_position, pixel_y_position, -_camera.focal_length };
+    const auto pixel_size = glm::dvec2{ _viewport.width / static_cast<double>(image_width()),
+                                        _viewport.height / static_cast<double>(image_height()) };
 
     auto color = glm::vec4{ 0.0f };
 
-    for (usize i = 0; i < samples; i++)
+    for (usize i = 0; i < _render_params.samples; i++)
     {
         auto ray = sample_pixel(pixel_position, pixel_size);
-        color += ray_color(ray, world, max_depth);
+        color += ray_color(ray, world, _render_params.max_depth);
     }
 
-    TRACER_ASSERT(samples != 0);
-    color /= static_cast<float>(samples);
+    TRACER_ASSERT(_render_params.samples != 0);
+    color /= static_cast<float>(_render_params.samples);
     color = gamma_correction(color);
     color = glm::clamp(color, glm::vec4{ 0.0f }, glm::vec4{ 1.0f });
 
     return color;
 }
 
-auto Camera::sample_pixel(const glm::dvec3& pixel_position, glm::dvec2 pixel_size) const -> Ray
+auto Renderer::sample_pixel(const glm::dvec3& pixel_position, glm::dvec2 pixel_size) const -> Ray
 {
     auto sample = sample_unit_square() * pixel_size;
     auto sample_position = pixel_position + glm::dvec3{ sample.x, sample.y, 0.0 };
-    auto ray_direction = glm::normalize(sample_position - _position);
+    auto ray_direction = glm::normalize(sample_position - _camera.position);
 
-    return Ray{ _position, ray_direction };
+    return Ray{ _camera.position, ray_direction };
 }
 
-auto Camera::ray_color(const Ray& ray, ObjectView world, usize max_depth) -> glm::vec4
+auto Renderer::ray_color(const Ray& ray, ObjectView world, usize max_depth) -> glm::vec4
 {
     if (max_depth == 0)
         return glm::vec4{ 0.0f };
@@ -122,7 +117,7 @@ auto Camera::ray_color(const Ray& ray, ObjectView world, usize max_depth) -> glm
     return ambient(ray);
 }
 
-auto Camera::closest_hit(ObjectView objects, const Ray& ray, Interval interval) -> std::optional<Hit>
+auto Renderer::closest_hit(ObjectView objects, const Ray& ray, Interval interval) -> std::optional<Hit>
 {
     auto closest = std::optional<Hit>{};
 
@@ -138,12 +133,12 @@ auto Camera::closest_hit(ObjectView objects, const Ray& ray, Interval interval) 
     return closest;
 }
 
-auto Camera::sample_unit_square() -> glm::dvec2
+auto Renderer::sample_unit_square() -> glm::dvec2
 {
     return glm::dvec2{ random_double(-0.5, 0.5), random_double(-0.5, 0.5) };
 }
 
-auto Camera::ambient(const Ray& ray) -> glm::vec4
+auto Renderer::ambient(const Ray& ray) -> glm::vec4
 {
     static constexpr auto blue = glm::vec3{ 0.5f, 0.7f, 1.0f };
     static constexpr auto white = glm::vec3{ 1.0f };
@@ -154,18 +149,18 @@ auto Camera::ambient(const Ray& ray) -> glm::vec4
     return glm::vec4{ background, 1.0f };
 }
 
-auto Camera::random_reflection(const glm::dvec3& normal) -> glm::dvec3
+auto Renderer::random_reflection(const glm::dvec3& normal) -> glm::dvec3
 {
     return faceforward(random_unit_dvec3(), normal);
 }
 
-auto Camera::lambertian_reflection(const glm::dvec3& normal) -> glm::dvec3
+auto Renderer::lambertian_reflection(const glm::dvec3& normal) -> glm::dvec3
 {
     // Pick a random point on a unit sphere tangent to the intersection point.
     return glm::normalize(normal + random_unit_dvec3());
 }
 
-auto Camera::gamma_correction(glm::vec4 linear_space_color) -> glm::vec4
+auto Renderer::gamma_correction(glm::vec4 linear_space_color) -> glm::vec4
 {
     // We're using a gamma value of 2.0, therefore the inverse is just the square root.
     auto rgb = glm::vec3{ linear_space_color };
@@ -173,6 +168,13 @@ auto Camera::gamma_correction(glm::vec4 linear_space_color) -> glm::vec4
     rgb = glm::clamp(rgb, glm::vec3{ 0.0f }, glm::vec3{ 1.0f });
     auto corrected_rgb = glm::sqrt(rgb);
     return glm::vec4{ corrected_rgb, linear_space_color.a };
+}
+
+auto render(const ImageView& image, ObjectView world, const Camera& camera, const RenderParams& render_params,
+            ProgressCallback progress_callback, std::stop_token stop_token) -> void
+{
+    auto renderer = Renderer{ image, camera, render_params };
+    renderer.render(world, progress_callback, std::move(stop_token));
 }
 
 } // namespace tracer

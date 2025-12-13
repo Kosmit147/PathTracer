@@ -6,9 +6,8 @@
 #include <glm/vec4.hpp>
 #include <imgui.h>
 #include <spdlog/spdlog.h>
-#include <tracer/camera.hpp>
 #include <tracer/object.hpp>
-#include <tracer/render.hpp>
+#include <tracer/renderer.hpp>
 
 #include <array>
 #include <chrono>
@@ -148,7 +147,7 @@ auto render_image(tracer::ImageView image_view, std::stop_token stop_token) -> v
     timer.start();
 
     tracer::render(
-        tracer::CameraParams{}, tracer::RenderParams{}, image_view, world,
+        image_view, world, tracer::Camera{}, tracer::RenderParams{},
         [](i32 progress) {
             render_feedback.progress = progress;
 
