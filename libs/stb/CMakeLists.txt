@@ -7,6 +7,7 @@ target_sources(
 
 	PRIVATE
 	    src/stb_image.c
+		src/stb_image_write.c
 
 	PUBLIC
 	    FILE_SET HEADERS
@@ -14,6 +15,7 @@ target_sources(
 		    stb
 		FILES
             stb/stb_image.h
+            stb/stb_image_write.h
 )
 
 target_compile_features(stb PUBLIC c_std_11)

@@ -24,7 +24,7 @@ namespace tracer {
 Renderer::Renderer(const ImageView& image, const Camera& camera, const RenderParams& render_params)
     : _image{ image }, _camera{ camera }, _render_params{ render_params }
 {
-    const auto aspect_ratio = static_cast<double>(image_width()) / static_cast<double>(image_height());
+    const auto aspect_ratio = static_cast<double>(_image.width()) / static_cast<double>(_image.height());
 
     const auto viewport_height = 2.0;
     const auto viewport_width = aspect_ratio * viewport_height;
@@ -39,9 +39,9 @@ auto Renderer::render(ObjectView world, ProgressCallback progress_callback, std:
 {
     i32 progress = -1;
 
-    for (usize y = 0; y < image_height(); y++)
+    for (usize y = 0; y < _image.height(); y++)
     {
-        auto new_progress = static_cast<i32>(static_cast<float>(y) / static_cast<float>(image_height()) * 100.0f);
+        auto new_progress = static_cast<i32>(static_cast<float>(y) / static_cast<float>(_image.height()) * 100.0f);
 
         if (new_progress != progress)
         {
@@ -49,7 +49,7 @@ auto Renderer::render(ObjectView world, ProgressCallback progress_callback, std:
             progress_callback(progress);
         }
 
-        for (usize x = 0; x < image_width(); x++)
+        for (usize x = 0; x < _image.width(); x++)
             _image[y, x] = pixel_color(x, y, world);
 
         if (stop_token.stop_requested())
@@ -62,14 +62,14 @@ auto Renderer::render(ObjectView world, ProgressCallback progress_callback, std:
 auto Renderer::pixel_color(usize x, usize y, ObjectView world) const -> glm::vec4
 {
     const auto pixel_x_position =
-        ((static_cast<double>(x) + 0.5) / static_cast<double>(image_width()) - 0.5) * _viewport.width;
+        ((static_cast<double>(x) + 0.5) / static_cast<double>(_image.width()) - 0.5) * _viewport.width;
     const auto pixel_y_position =
-        -(((static_cast<double>(y) + 0.5) / static_cast<double>(image_height()) - 0.5) * _viewport.height);
+        -(((static_cast<double>(y) + 0.5) / static_cast<double>(_image.height()) - 0.5) * _viewport.height);
 
     TRACER_ASSERT(_camera.focal_length != 0.0);
     const auto pixel_position = glm::dvec3{ pixel_x_position, pixel_y_position, -_camera.focal_length };
-    const auto pixel_size = glm::dvec2{ _viewport.width / static_cast<double>(image_width()),
-                                        _viewport.height / static_cast<double>(image_height()) };
+    const auto pixel_size = glm::dvec2{ _viewport.width / static_cast<double>(_image.width()),
+                                        _viewport.height / static_cast<double>(_image.height()) };
 
     auto color = glm::vec4{ 0.0f };
 

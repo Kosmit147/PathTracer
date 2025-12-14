@@ -2,10 +2,12 @@
 #include <GLFW/glfw3.h>
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
+#include <glm/common.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 #include <imgui.h>
 #include <spdlog/spdlog.h>
+#include <stb_image_write.h>
 #include <tracer/object.hpp>
 #include <tracer/renderer.hpp>
 
@@ -13,7 +15,6 @@
 #include <chrono>
 #include <cstdlib>
 #include <future>
-#include <mdspan>
 #include <memory>
 #include <span>
 #include <stop_token>
@@ -66,6 +67,30 @@ auto gl_debug_message_callback([[maybe_unused]] GLenum source, [[maybe_unused]] 
 }
 
 #endif
+
+[[nodiscard]] auto to_rgba8(glm::vec4 color) -> glm::vec<4, u8>
+{
+    color = glm::clamp(color, glm::vec4{ 0.0f }, glm::vec4{ 0.9999f });
+    auto r = static_cast<u8>(color.r * 256.0f);
+    auto g = static_cast<u8>(color.g * 256.0f);
+    auto b = static_cast<u8>(color.b * 256.0f);
+    auto a = static_cast<u8>(color.a * 256.0f);
+    return glm::vec<4, u8>{ r, g, b, a };
+}
+
+auto write_image(const std::string& path, std::span<const glm::vec4> image, usize image_width, usize image_height)
+    -> bool
+{
+    auto image_rgba8 = std::vector<glm::vec<4, u8>>{};
+    image_rgba8.resize(image.size());
+
+    for (usize i = 0; i < image.size(); i++)
+        image_rgba8[i] = to_rgba8(image[i]);
+
+    auto stride = image_width * sizeof(glm::vec<4, u8>);
+    return stbi_write_png(path.c_str(), static_cast<int>(image_width), static_cast<int>(image_height), 4,
+                          image_rgba8.data(), static_cast<int>(stride));
+}
 
 const auto vertex_shader_source = std::string{
     R"(#version 460 core
@@ -255,7 +280,7 @@ auto run() -> int
     texture.clear();
 
     auto image = std::vector{ image_size, glm::vec4{ 0.0f } };
-    const auto image_view = std::mdspan{ image.data(), image_height, image_width };
+    const auto image_view = tracer::ImageView{ image.data(), image_height, image_width };
 
     auto render_image_stop_source = std::stop_source{};
     auto render_result = std::async(std::launch::async, render_image, image_view, render_image_stop_source.get_token());
@@ -302,6 +327,9 @@ auto run() -> int
             render_result =
                 std::async(std::launch::async, render_image, image_view, render_image_stop_source.get_token());
         }
+
+        if (ImGui::Button("Save"))
+            write_image("image.png", image, image_width, image_height);
 
         ImGui::End();
 

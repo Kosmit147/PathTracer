@@ -39,8 +39,8 @@
         "CMAKE_C_COMPILER": "clang",
         "CMAKE_CXX_COMPILER": "clang++",
 
-        "CMAKE_C_FLAGS": "",
-        "CMAKE_CXX_FLAGS": "",
+        "CMAKE_C_FLAGS": "-fno-strict-aliasing",
+        "CMAKE_CXX_FLAGS": "-fno-strict-aliasing",
 
         "CMAKE_C_FLAGS_DEBUG": "-O0 -g -D_DEBUG",
         "CMAKE_CXX_FLAGS_DEBUG": "-O0 -g -D_DEBUG",

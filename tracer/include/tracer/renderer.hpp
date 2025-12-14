@@ -18,8 +18,15 @@
 namespace tracer {
 
 using ProgressCallback = void (*)(i32);
-using ImageView = std::mdspan<glm::vec4, std::dextents<usize, 2>>;
 using ObjectView = std::span<const std::shared_ptr<const Object>>;
+
+struct ImageView : std::mdspan<glm::vec4, std::dextents<usize, 2>>
+{
+    using std::mdspan<glm::vec4, std::dextents<usize, 2>>::mdspan;
+
+    [[nodiscard]] auto width() const -> auto { return extent(1); }
+    [[nodiscard]] auto height() const -> auto { return extent(0); }
+};
 
 struct Camera
 {
@@ -62,9 +69,6 @@ private:
     [[nodiscard]] static auto lambertian_reflection(const glm::dvec3& normal) -> glm::dvec3;
 
     [[nodiscard]] static auto gamma_correction(glm::vec4 linear_space_color) -> glm::vec4;
-
-    [[nodiscard]] auto image_height() const -> auto { return _image.extent(0); }
-    [[nodiscard]] auto image_width() const -> auto { return _image.extent(1); }
 
 private:
     ImageView _image{};
