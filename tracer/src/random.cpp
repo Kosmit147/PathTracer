@@ -3,6 +3,7 @@
 #include <glm/exponential.hpp>
 #include <glm/geometric.hpp>
 #include <glm/vec3.hpp>
+#include <pcg_random.hpp>
 
 #include <random>
 
@@ -10,7 +11,7 @@ namespace tracer {
 
 namespace {
 
-auto generator = std::mt19937{};
+auto generator = pcg32_fast{};
 
 } // namespace
 

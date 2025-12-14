@@ -42,5 +42,6 @@ if(PT_DEBUG_BREAKS)
 endif()
 
 target_link_libraries(tracer PUBLIC glm::glm)
+target_link_libraries(tracer PUBLIC PathTracer::pcg)
 
 add_library(PathTracer::tracer ALIAS tracer)
