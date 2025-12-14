@@ -17,6 +17,7 @@ add_subdirectory(libs/glad SYSTEM)
 add_subdirectory(libs/glfw SYSTEM)
 add_subdirectory(libs/glm SYSTEM)
 add_subdirectory(libs/imgui SYSTEM)
+add_subdirectory(libs/pcg-cpp SYSTEM)
 add_subdirectory(libs/spdlog SYSTEM)
 add_subdirectory(libs/stb SYSTEM)
 
