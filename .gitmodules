@@ -16,3 +16,6 @@
 [submodule "libs/stb/stb"]
 	path = libs/stb/stb
 	url = https://github.com/nothings/stb.git
+[submodule "libs/pcg-cpp/pcg-cpp"]
+	path = libs/pcg-cpp/pcg-cpp
+	url = https://github.com/imneme/pcg-cpp
