@@ -56,19 +56,19 @@ public:
         std::stop_token stop_token = std::stop_token{}) const -> void;
 
 private:
-    [[nodiscard]] auto pixel_color(usize x, usize y, ObjectView world) const -> glm::vec4;
+    [[nodiscard]] auto pixel_color(usize x, usize y, ObjectView world) const -> glm::vec3;
     [[nodiscard]] auto sample_pixel(const glm::dvec3& pixel_position, glm::dvec2 pixel_size) const -> Ray;
 
-    [[nodiscard]] static auto ray_color(const Ray& ray, ObjectView world, usize max_depth) -> glm::vec4;
+    [[nodiscard]] static auto ray_color(const Ray& ray, ObjectView world, usize max_depth) -> glm::vec3;
     [[nodiscard]] static auto closest_hit(ObjectView objects, const Ray& ray,
                                           Interval interval = Interval::non_negative) -> std::optional<Hit>;
     [[nodiscard]] static auto sample_unit_square() -> glm::dvec2;
-    [[nodiscard]] static auto ambient(const Ray& ray) -> glm::vec4;
+    [[nodiscard]] static auto ambient(const Ray& ray) -> glm::vec3;
 
     [[nodiscard]] static auto random_reflection(const glm::dvec3& normal) -> glm::dvec3;
     [[nodiscard]] static auto lambertian_reflection(const glm::dvec3& normal) -> glm::dvec3;
 
-    [[nodiscard]] static auto gamma_correction(glm::vec4 linear_space_color) -> glm::vec4;
+    [[nodiscard]] static auto gamma_correction(glm::vec3 linear_space_color) -> glm::vec3;
 
 private:
     ImageView _image{};
