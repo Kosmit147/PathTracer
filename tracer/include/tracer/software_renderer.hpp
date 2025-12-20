@@ -47,10 +47,11 @@ struct RenderParams
     usize max_depth{ 50 };
 };
 
-class Renderer
+class SoftwareRenderer
 {
 public:
-    explicit Renderer(const ImageView& image, const Camera& camera = {}, const RenderParams& render_params = {});
+    explicit SoftwareRenderer(const ImageView& image, const Camera& camera = {},
+                              const RenderParams& render_params = {});
 
     auto render(
         ObjectView world, ProgressCallback progress_callback = [](i32) {},

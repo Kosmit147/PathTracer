@@ -8,7 +8,7 @@ target_sources(
     PRIVATE
         src/object.cpp
         src/random.cpp
-        src/renderer.cpp
+        src/software_renderer.cpp
 
     PUBLIC
         FILE_SET HEADERS
@@ -22,7 +22,7 @@ target_sources(
             include/tracer/object.hpp
             include/tracer/random.hpp
             include/tracer/ray.hpp
-            include/tracer/renderer.hpp
+            include/tracer/software_renderer.hpp
             include/tracer/trigonometric.hpp
 )
 

@@ -1,4 +1,4 @@
-#include "tracer/renderer.hpp"
+#include "tracer/software_renderer.hpp"
 
 #include <glm/common.hpp>
 #include <glm/exponential.hpp>
@@ -21,7 +21,7 @@
 
 namespace tracer {
 
-Renderer::Renderer(const ImageView& image, const Camera& camera, const RenderParams& render_params)
+SoftwareRenderer::SoftwareRenderer(const ImageView& image, const Camera& camera, const RenderParams& render_params)
     : _image{ image }, _camera{ camera }, _render_params{ render_params }
 {
     const auto aspect_ratio = static_cast<double>(_image.width()) / static_cast<double>(_image.height());
@@ -35,7 +35,7 @@ Renderer::Renderer(const ImageView& image, const Camera& camera, const RenderPar
     };
 }
 
-auto Renderer::render(ObjectView world, ProgressCallback progress_callback, std::stop_token stop_token) -> void
+auto SoftwareRenderer::render(ObjectView world, ProgressCallback progress_callback, std::stop_token stop_token) -> void
 {
     i32 progress = -1;
 
@@ -59,7 +59,7 @@ auto Renderer::render(ObjectView world, ProgressCallback progress_callback, std:
     progress_callback(100);
 }
 
-auto Renderer::pixel_color(usize x, usize y, ObjectView world) -> glm::vec3
+auto SoftwareRenderer::pixel_color(usize x, usize y, ObjectView world) -> glm::vec3
 {
     const auto pixel_x_position =
         ((static_cast<double>(x) + 0.5) / static_cast<double>(_image.width()) - 0.5) * _viewport.width;
@@ -87,7 +87,7 @@ auto Renderer::pixel_color(usize x, usize y, ObjectView world) -> glm::vec3
     return color;
 }
 
-auto Renderer::sample_pixel(const glm::dvec3& pixel_position, glm::dvec2 pixel_size) -> Ray
+auto SoftwareRenderer::sample_pixel(const glm::dvec3& pixel_position, glm::dvec2 pixel_size) -> Ray
 {
     auto sample = sample_unit_square() * pixel_size;
     auto sample_position = pixel_position + glm::dvec3{ sample.x, sample.y, 0.0 };
@@ -96,7 +96,7 @@ auto Renderer::sample_pixel(const glm::dvec3& pixel_position, glm::dvec2 pixel_s
     return Ray{ _camera.position, ray_direction };
 }
 
-auto Renderer::ray_color(const Ray& ray, ObjectView world, usize max_depth) -> glm::vec3
+auto SoftwareRenderer::ray_color(const Ray& ray, ObjectView world, usize max_depth) -> glm::vec3
 {
     if (max_depth == 0)
         return glm::vec3{ 0.0f };
@@ -117,7 +117,7 @@ auto Renderer::ray_color(const Ray& ray, ObjectView world, usize max_depth) -> g
     return ambient(ray);
 }
 
-auto Renderer::closest_hit(ObjectView objects, const Ray& ray, Interval interval) -> std::optional<Hit>
+auto SoftwareRenderer::closest_hit(ObjectView objects, const Ray& ray, Interval interval) -> std::optional<Hit>
 {
     auto closest = std::optional<Hit>{};
 
@@ -133,7 +133,7 @@ auto Renderer::closest_hit(ObjectView objects, const Ray& ray, Interval interval
     return closest;
 }
 
-auto Renderer::ambient(const Ray& ray) -> glm::vec3
+auto SoftwareRenderer::ambient(const Ray& ray) -> glm::vec3
 {
     static constexpr auto blue = glm::vec3{ 0.5f, 0.7f, 1.0f };
     static constexpr auto white = glm::vec3{ 1.0f };
@@ -144,23 +144,23 @@ auto Renderer::ambient(const Ray& ray) -> glm::vec3
     return color;
 }
 
-auto Renderer::random_reflection(const glm::dvec3& normal) -> glm::dvec3
+auto SoftwareRenderer::random_reflection(const glm::dvec3& normal) -> glm::dvec3
 {
     return faceforward(_random.get_unit_dvec3(), normal);
 }
 
-auto Renderer::lambertian_reflection(const glm::dvec3& normal) -> glm::dvec3
+auto SoftwareRenderer::lambertian_reflection(const glm::dvec3& normal) -> glm::dvec3
 {
     // Pick a random point on a unit sphere tangent to the intersection point.
     return glm::normalize(normal + _random.get_unit_dvec3());
 }
 
-auto Renderer::sample_unit_square() -> glm::dvec2
+auto SoftwareRenderer::sample_unit_square() -> glm::dvec2
 {
     return glm::dvec2{ _random.get_double(-0.5, 0.5), _random.get_double(-0.5, 0.5) };
 }
 
-auto Renderer::gamma_correction(glm::vec3 linear_space_color) -> glm::vec3
+auto SoftwareRenderer::gamma_correction(glm::vec3 linear_space_color) -> glm::vec3
 {
     // We're using a gamma value of 2.0, therefore the inverse is just the square root.
     linear_space_color = glm::clamp(linear_space_color, glm::vec3{ 0.0f }, glm::vec3{ 1.0f });
@@ -170,7 +170,7 @@ auto Renderer::gamma_correction(glm::vec3 linear_space_color) -> glm::vec3
 auto render(const ImageView& image, ObjectView world, const Camera& camera, const RenderParams& render_params,
             ProgressCallback progress_callback, std::stop_token stop_token) -> void
 {
-    auto renderer = Renderer{ image, camera, render_params };
+    auto renderer = SoftwareRenderer{ image, camera, render_params };
     renderer.render(world, progress_callback, std::move(stop_token));
 }
 
