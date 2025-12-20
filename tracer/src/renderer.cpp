@@ -35,7 +35,7 @@ Renderer::Renderer(const ImageView& image, const Camera& camera, const RenderPar
     };
 }
 
-auto Renderer::render(ObjectView world, ProgressCallback progress_callback, std::stop_token stop_token) const -> void
+auto Renderer::render(ObjectView world, ProgressCallback progress_callback, std::stop_token stop_token) -> void
 {
     i32 progress = -1;
 
@@ -59,7 +59,7 @@ auto Renderer::render(ObjectView world, ProgressCallback progress_callback, std:
     progress_callback(100);
 }
 
-auto Renderer::pixel_color(usize x, usize y, ObjectView world) const -> glm::vec3
+auto Renderer::pixel_color(usize x, usize y, ObjectView world) -> glm::vec3
 {
     const auto pixel_x_position =
         ((static_cast<double>(x) + 0.5) / static_cast<double>(_image.width()) - 0.5) * _viewport.width;
@@ -87,7 +87,7 @@ auto Renderer::pixel_color(usize x, usize y, ObjectView world) const -> glm::vec
     return color;
 }
 
-auto Renderer::sample_pixel(const glm::dvec3& pixel_position, glm::dvec2 pixel_size) const -> Ray
+auto Renderer::sample_pixel(const glm::dvec3& pixel_position, glm::dvec2 pixel_size) -> Ray
 {
     auto sample = sample_unit_square() * pixel_size;
     auto sample_position = pixel_position + glm::dvec3{ sample.x, sample.y, 0.0 };
@@ -133,11 +133,6 @@ auto Renderer::closest_hit(ObjectView objects, const Ray& ray, Interval interval
     return closest;
 }
 
-auto Renderer::sample_unit_square() -> glm::dvec2
-{
-    return glm::dvec2{ random_double(-0.5, 0.5), random_double(-0.5, 0.5) };
-}
-
 auto Renderer::ambient(const Ray& ray) -> glm::vec3
 {
     static constexpr auto blue = glm::vec3{ 0.5f, 0.7f, 1.0f };
@@ -151,13 +146,18 @@ auto Renderer::ambient(const Ray& ray) -> glm::vec3
 
 auto Renderer::random_reflection(const glm::dvec3& normal) -> glm::dvec3
 {
-    return faceforward(random_unit_dvec3(), normal);
+    return faceforward(_random.get_unit_dvec3(), normal);
 }
 
 auto Renderer::lambertian_reflection(const glm::dvec3& normal) -> glm::dvec3
 {
     // Pick a random point on a unit sphere tangent to the intersection point.
-    return glm::normalize(normal + random_unit_dvec3());
+    return glm::normalize(normal + _random.get_unit_dvec3());
+}
+
+auto Renderer::sample_unit_square() -> glm::dvec2
+{
+    return glm::dvec2{ _random.get_double(-0.5, 0.5), _random.get_double(-0.5, 0.5) };
 }
 
 auto Renderer::gamma_correction(glm::vec3 linear_space_color) -> glm::vec3
