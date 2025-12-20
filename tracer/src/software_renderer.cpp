@@ -9,7 +9,6 @@
 
 #include <optional>
 #include <stop_token>
-#include <utility>
 
 #include "tracer/assert.hpp"
 #include "tracer/common.hpp"
@@ -165,13 +164,6 @@ auto SoftwareRenderer::gamma_correction(glm::vec3 linear_space_color) -> glm::ve
     // We're using a gamma value of 2.0, therefore the inverse is just the square root.
     linear_space_color = glm::clamp(linear_space_color, glm::vec3{ 0.0f }, glm::vec3{ 1.0f });
     return glm::sqrt(linear_space_color);
-}
-
-auto render(const ImageView& image, ObjectView world, const Camera& camera, const RenderParams& render_params,
-            ProgressCallback progress_callback, std::stop_token stop_token) -> void
-{
-    auto renderer = SoftwareRenderer{ image, camera, render_params };
-    renderer.render(world, progress_callback, std::move(stop_token));
 }
 
 } // namespace tracer

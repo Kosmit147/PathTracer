@@ -9,7 +9,7 @@
 #include <spdlog/spdlog.h>
 #include <stb_image_write.h>
 #include <tracer/object.hpp>
-#include <tracer/software_renderer.hpp>
+#include <tracer/renderer.hpp>
 
 #include <array>
 #include <chrono>
