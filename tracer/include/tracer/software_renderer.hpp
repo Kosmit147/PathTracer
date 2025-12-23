@@ -17,10 +17,10 @@ namespace tracer {
 class SoftwareRenderer : public Renderer
 {
 public:
-    explicit SoftwareRenderer(const ImageView& image, const Camera& camera = {},
+    explicit SoftwareRenderer(const ImageView<glm::vec4>& image, const Camera& camera = {},
                               const RenderParams& render_params = {});
 
-    auto render(ObjectView world, ProgressCallback progress_callback, std::stop_token stop_token) -> void override;
+    auto render(ObjectView world, std::stop_token stop_token, volatile i32* progress) -> void override;
 
 private:
     [[nodiscard]] auto pixel_color(usize x, usize y, ObjectView world) -> glm::vec3;
@@ -39,7 +39,7 @@ private:
     [[nodiscard]] static auto gamma_correction(glm::vec3 linear_space_color) -> glm::vec3;
 
 private:
-    ImageView _image{};
+    ImageView<glm::vec4> _image{};
     Camera _camera{};
     RenderParams _render_params{};
     Viewport _viewport{};

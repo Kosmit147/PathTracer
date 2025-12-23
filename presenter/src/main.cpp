@@ -14,12 +14,9 @@
 #include <array>
 #include <chrono>
 #include <cstdlib>
-#include <future>
 #include <memory>
 #include <span>
-#include <stop_token>
 #include <string>
-#include <utility>
 #include <vector>
 
 #include "assert.hpp"
@@ -27,7 +24,7 @@
 #include "defer.hpp"
 #include "gl.hpp"
 #include "log.hpp"
-#include "timer.hpp"
+#include "render_worker.hpp"
 
 namespace presenter {
 
@@ -144,7 +141,6 @@ void main()
 
 constexpr u32 image_width = 640;
 constexpr u32 image_height = 360;
-constexpr u32 image_size = image_width * image_height;
 
 constexpr u32 window_width = 1920;
 constexpr u32 window_height = 1080;
@@ -153,40 +149,6 @@ const auto world = std::array<std::shared_ptr<const tracer::Object>, 2>{
     std::make_shared<tracer::Sphere>(glm::dvec3{ 0.0, 0.0, -1.0 }, 0.5),
     std::make_shared<tracer::Sphere>(glm::dvec3{ 0.0, -100.5, -1.0 }, 100.0)
 };
-
-struct RenderFeedback
-{
-    // These values are updated by the progress callback on another thread. They're read only on the main thread only
-    // for display in the ui, so we don't care about data races.
-    i32 progress{ 0 };
-    double time_ms{ 0.0 };
-    double time_s{ 0.0 };
-};
-
-auto render_feedback = RenderFeedback{};
-
-// This function is meant to be run on another thread.
-auto render_image(tracer::ImageView image_view, std::stop_token stop_token) -> void
-{
-    auto timer = Timer{};
-    timer.start();
-
-    tracer::render(
-        image_view, world, tracer::Camera{}, tracer::RenderParams{},
-        [](i32 progress) {
-            render_feedback.progress = progress;
-
-            if (progress >= 100)
-                PRESENTER_INFO("Progress: Done!");
-            else
-                PRESENTER_INFO("Progress: {}%", progress);
-        },
-        std::move(stop_token));
-
-    render_feedback.time_ms = timer.elapsed_ms();
-    render_feedback.time_s = render_feedback.time_ms * 0.001;
-    PRESENTER_INFO("Took {:.4f}s ({:.4f}ms).", render_feedback.time_s, render_feedback.time_ms);
-}
 
 auto run() -> int
 {
@@ -275,22 +237,16 @@ auto run() -> int
         ImGui::DestroyContext();
     } };
 
-    auto shader = gl::Shader{ vertex_shader_source, fragment_shader_source };
-    auto texture = gl::Texture{ image_width, image_height };
-    texture.clear();
+    auto image_vertex_array = gl::VertexArray{};
+    auto image_shader = gl::Shader{ vertex_shader_source, fragment_shader_source };
+    auto image_texture = gl::Texture{ image_width, image_height };
+    image_texture.clear();
 
-    auto image = std::vector{ image_size, glm::vec4{ 0.0f } };
-    const auto image_view = tracer::ImageView{ image.data(), image_height, image_width };
+    auto render_worker = RenderWorker{ image_width, image_height, world };
 
-    auto render_image_stop_source = std::stop_source{};
-    auto render_result = std::async(std::launch::async, render_image, image_view, render_image_stop_source.get_token());
-    Defer request_render_image_stop{ [&] { render_image_stop_source.request_stop(); } };
-
-    auto vertex_array = gl::VertexArray{};
-
-    vertex_array.bind();
-    shader.bind();
-    texture.bind(0);
+    image_vertex_array.bind();
+    image_shader.bind();
+    image_texture.bind(0);
 
     while (!glfwWindowShouldClose(window))
     {
@@ -298,40 +254,30 @@ auto run() -> int
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        // Continually update the displayed image as it's being rendered.
-        if (render_result.valid())
+        auto render_status = render_worker.poll_status();
+
+        if (render_status == RenderStatus::InProgress || render_status == RenderStatus::JustCompleted)
+            image_texture.upload(render_worker.image().pixels());
+
         {
-            using namespace std::chrono_literals;
+            ImGui::Begin("Path Tracer");
 
-            if (render_result.wait_for(1ms) == std::future_status::ready)
-                render_result.get();
+            ImGui::ProgressBar(static_cast<float>(render_worker.progress()) / 100.0f);
+            auto render_time_ms = render_worker.time_ms();
+            auto render_time_s = render_time_ms / 1000.0;
+            ImGui::Text("Took %.4fs (%.4fms)", render_time_s, render_time_ms);
 
-            texture.upload(image);
+            if (ImGui::Button("Generate"))
+                render_worker.restart();
+
+            if (ImGui::Button("Save"))
+            {
+                auto& image = render_worker.image();
+                write_image("image.png", image.pixels(), image.width(), image.height());
+            }
+
+            ImGui::End();
         }
-
-        ImGui::Begin("Path Tracer");
-
-        ImGui::ProgressBar(static_cast<float>(render_feedback.progress) / 100.0f);
-        ImGui::Text("Took %.4fs (%.4fms)", render_feedback.time_s, render_feedback.time_ms);
-
-        if (ImGui::Button("Generate"))
-        {
-            // Make sure the current render job stops.
-            render_image_stop_source.request_stop();
-
-            if (render_result.valid())
-                render_result.get();
-
-            render_image_stop_source = std::stop_source{};
-
-            render_result =
-                std::async(std::launch::async, render_image, image_view, render_image_stop_source.get_token());
-        }
-
-        if (ImGui::Button("Save"))
-            write_image("image.png", image, image_width, image_height);
-
-        ImGui::End();
 
         glClear(GL_COLOR_BUFFER_BIT);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);

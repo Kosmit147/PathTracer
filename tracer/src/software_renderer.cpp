@@ -20,7 +20,8 @@
 
 namespace tracer {
 
-SoftwareRenderer::SoftwareRenderer(const ImageView& image, const Camera& camera, const RenderParams& render_params)
+SoftwareRenderer::SoftwareRenderer(const ImageView<glm::vec4>& image, const Camera& camera,
+                                   const RenderParams& render_params)
     : _image{ image }, _camera{ camera }, _render_params{ render_params }
 {
     const auto aspect_ratio = static_cast<double>(_image.width()) / static_cast<double>(_image.height());
@@ -34,19 +35,15 @@ SoftwareRenderer::SoftwareRenderer(const ImageView& image, const Camera& camera,
     };
 }
 
-auto SoftwareRenderer::render(ObjectView world, ProgressCallback progress_callback, std::stop_token stop_token) -> void
+auto SoftwareRenderer::render(ObjectView world, std::stop_token stop_token, volatile i32* progress) -> void
 {
-    i32 progress = -1;
+    if (progress)
+        *progress = 0;
 
     for (usize y = 0; y < _image.height(); y++)
     {
-        auto new_progress = static_cast<i32>(static_cast<float>(y) / static_cast<float>(_image.height()) * 100.0f);
-
-        if (new_progress != progress)
-        {
-            progress = new_progress;
-            progress_callback(progress);
-        }
+        if (progress)
+            *progress = static_cast<i32>(static_cast<float>(y) / static_cast<float>(_image.height()) * 100.0f);
 
         for (usize x = 0; x < _image.width(); x++)
             _image[y, x] = glm::vec4{ pixel_color(x, y, world), 1.0f };
@@ -55,7 +52,8 @@ auto SoftwareRenderer::render(ObjectView world, ProgressCallback progress_callba
             return;
     }
 
-    progress_callback(100);
+    if (progress)
+        *progress = 100;
 }
 
 auto SoftwareRenderer::pixel_color(usize x, usize y, ObjectView world) -> glm::vec3

@@ -8,6 +8,7 @@ target_sources(
     PRIVATE
         src/gl.cpp
         src/main.cpp
+        src/render_worker.cpp
 
     PRIVATE
         FILE_SET HEADERS
@@ -19,6 +20,7 @@ target_sources(
             src/defer.hpp
             src/gl.hpp
             src/log.hpp
+            src/render_worker.hpp
             src/timer.hpp
 )
 
