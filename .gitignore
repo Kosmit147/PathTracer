@@ -43,5 +43,8 @@
 # Visual Studio Cache
 .vs/
 
+# CLion Cache
+.idea/
+
 # Build Directory
 out/
