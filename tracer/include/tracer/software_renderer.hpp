@@ -14,6 +14,12 @@
 
 namespace tracer {
 
+struct Pixel
+{
+    glm::dvec3 position{ 0.0 };
+    glm::dvec2 size{ 0.0 };
+};
+
 class SoftwareRenderer : public Renderer
 {
 public:
@@ -23,8 +29,9 @@ public:
     auto render(std::stop_token stop_token, volatile i32* progress) -> void override;
 
 private:
-    [[nodiscard]] auto pixel_color(usize x, usize y) -> glm::vec3;
-    [[nodiscard]] auto sample_pixel(const glm::dvec3& pixel_position, glm::dvec2 pixel_size) -> Ray;
+    [[nodiscard]] auto pixel(usize x, usize y) const -> Pixel;
+    [[nodiscard]] auto pixel_color(const Pixel& pixel) -> glm::vec3;
+    [[nodiscard]] auto sample_pixel(const Pixel& pixel) -> Ray;
 
     [[nodiscard]] auto ray_color(const Ray& ray, usize max_depth) -> glm::vec3;
     [[nodiscard]] auto closest_hit(const Ray& ray, Interval interval = Interval::non_negative) const

@@ -37,7 +37,7 @@ auto SoftwareRenderer::render(std::stop_token stop_token, volatile i32* progress
             *progress = static_cast<i32>(static_cast<float>(y) / static_cast<float>(_image.height()) * 100.0f);
 
         for (usize x = 0; x < _image.width(); x++)
-            _image[y, x] = glm::vec4{ pixel_color(x, y), 1.0f };
+            _image[y, x] = glm::vec4{ pixel_color(pixel(x, y)), 1.0f };
 
         if (stop_token.stop_requested())
             return;
@@ -47,23 +47,31 @@ auto SoftwareRenderer::render(std::stop_token stop_token, volatile i32* progress
         *progress = 100;
 }
 
-auto SoftwareRenderer::pixel_color(usize x, usize y) -> glm::vec3
+auto SoftwareRenderer::pixel(usize x, usize y) const -> Pixel
 {
-    const auto pixel_x_position =
-        ((static_cast<double>(x) + 0.5) / static_cast<double>(_image.width()) - 0.5) * _viewport.width;
-    const auto pixel_y_position =
-        -(((static_cast<double>(y) + 0.5) / static_cast<double>(_image.height()) - 0.5) * _viewport.height);
+    const auto pixel_position_relative_to_camera =
+        glm::dvec3{ ((static_cast<double>(x) + 0.5) / static_cast<double>(_image.width()) - 0.5) * _viewport.width,
+                    -(((static_cast<double>(y) + 0.5) / static_cast<double>(_image.height()) - 0.5) * _viewport.height),
+                    -_camera.focal_length };
 
     TRACER_ASSERT(_camera.focal_length != 0.0);
-    const auto pixel_position = glm::dvec3{ pixel_x_position, pixel_y_position, -_camera.focal_length };
+    const auto pixel_position = _camera.position + pixel_position_relative_to_camera;
     const auto pixel_size = glm::dvec2{ _viewport.width / static_cast<double>(_image.width()),
                                         _viewport.height / static_cast<double>(_image.height()) };
 
+    return Pixel{
+        .position = pixel_position,
+        .size = pixel_size,
+    };
+}
+
+auto SoftwareRenderer::pixel_color(const Pixel& pixel) -> glm::vec3
+{
     auto color = glm::vec3{ 0.0f };
 
     for (usize i = 0; i < _render_params.samples; i++)
     {
-        auto ray = sample_pixel(pixel_position, pixel_size);
+        auto ray = sample_pixel(pixel);
         color += ray_color(ray, _render_params.max_depth);
     }
 
@@ -75,10 +83,10 @@ auto SoftwareRenderer::pixel_color(usize x, usize y) -> glm::vec3
     return color;
 }
 
-auto SoftwareRenderer::sample_pixel(const glm::dvec3& pixel_position, glm::dvec2 pixel_size) -> Ray
+auto SoftwareRenderer::sample_pixel(const Pixel& pixel) -> Ray
 {
-    auto sample = sample_unit_square() * pixel_size;
-    auto sample_position = pixel_position + glm::dvec3{ sample.x, sample.y, 0.0 };
+    auto sample = sample_unit_square() * pixel.size;
+    auto sample_position = pixel.position + glm::dvec3{ sample.x, sample.y, 0.0 };
     auto ray_direction = glm::normalize(sample_position - _camera.position);
 
     return Ray{ _camera.position, ray_direction };
