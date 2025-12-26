@@ -20,22 +20,13 @@
 
 namespace tracer {
 
-SoftwareRenderer::SoftwareRenderer(const ImageView<glm::vec4>& image, const Camera& camera,
+SoftwareRenderer::SoftwareRenderer(const ImageView<glm::vec4>& image, ObjectSpan world, const Camera& camera,
                                    const RenderParams& render_params)
-    : _image{ image }, _camera{ camera }, _render_params{ render_params }
-{
-    const auto aspect_ratio = static_cast<double>(_image.width()) / static_cast<double>(_image.height());
+    : _image{ image }, _world{ world }, _camera{ camera }, _render_params{ render_params },
+      _viewport{ create_viewport(_image.width(), _image.height()) }
+{}
 
-    const auto viewport_height = 2.0;
-    const auto viewport_width = aspect_ratio * viewport_height;
-
-    _viewport = Viewport{
-        .width = viewport_width,
-        .height = viewport_height,
-    };
-}
-
-auto SoftwareRenderer::render(ObjectView world, std::stop_token stop_token, volatile i32* progress) -> void
+auto SoftwareRenderer::render(std::stop_token stop_token, volatile i32* progress) -> void
 {
     if (progress)
         *progress = 0;
@@ -46,7 +37,7 @@ auto SoftwareRenderer::render(ObjectView world, std::stop_token stop_token, vola
             *progress = static_cast<i32>(static_cast<float>(y) / static_cast<float>(_image.height()) * 100.0f);
 
         for (usize x = 0; x < _image.width(); x++)
-            _image[y, x] = glm::vec4{ pixel_color(x, y, world), 1.0f };
+            _image[y, x] = glm::vec4{ pixel_color(x, y), 1.0f };
 
         if (stop_token.stop_requested())
             return;
@@ -56,7 +47,7 @@ auto SoftwareRenderer::render(ObjectView world, std::stop_token stop_token, vola
         *progress = 100;
 }
 
-auto SoftwareRenderer::pixel_color(usize x, usize y, ObjectView world) -> glm::vec3
+auto SoftwareRenderer::pixel_color(usize x, usize y) -> glm::vec3
 {
     const auto pixel_x_position =
         ((static_cast<double>(x) + 0.5) / static_cast<double>(_image.width()) - 0.5) * _viewport.width;
@@ -73,7 +64,7 @@ auto SoftwareRenderer::pixel_color(usize x, usize y, ObjectView world) -> glm::v
     for (usize i = 0; i < _render_params.samples; i++)
     {
         auto ray = sample_pixel(pixel_position, pixel_size);
-        color += ray_color(ray, world, _render_params.max_depth);
+        color += ray_color(ray, _render_params.max_depth);
     }
 
     TRACER_ASSERT(_render_params.samples != 0);
@@ -93,12 +84,12 @@ auto SoftwareRenderer::sample_pixel(const glm::dvec3& pixel_position, glm::dvec2
     return Ray{ _camera.position, ray_direction };
 }
 
-auto SoftwareRenderer::ray_color(const Ray& ray, ObjectView world, usize max_depth) -> glm::vec3
+auto SoftwareRenderer::ray_color(const Ray& ray, usize max_depth) -> glm::vec3
 {
     if (max_depth == 0)
         return glm::vec3{ 0.0f };
 
-    if (auto hit = closest_hit(world, ray, Interval{ .min = 0.001, .max = +infinity }))
+    if (auto hit = closest_hit(ray, Interval{ .min = 0.001, .max = +infinity }))
     {
         static constexpr auto material_color = glm::vec3{ 0.5f };
 
@@ -108,17 +99,17 @@ auto SoftwareRenderer::ray_color(const Ray& ray, ObjectView world, usize max_dep
             reflect_direction,
         };
 
-        return material_color * ray_color(reflected_ray, world, max_depth - 1);
+        return material_color * ray_color(reflected_ray, max_depth - 1);
     }
 
     return ambient(ray);
 }
 
-auto SoftwareRenderer::closest_hit(ObjectView objects, const Ray& ray, Interval interval) -> std::optional<Hit>
+auto SoftwareRenderer::closest_hit(const Ray& ray, Interval interval) const -> std::optional<Hit>
 {
     auto closest = std::optional<Hit>{};
 
-    for (auto& object : objects)
+    for (auto& object : _world)
     {
         if (auto hit = object->hit(ray, interval))
         {
@@ -155,6 +146,19 @@ auto SoftwareRenderer::lambertian_reflection(const glm::dvec3& normal) -> glm::d
 auto SoftwareRenderer::sample_unit_square() -> glm::dvec2
 {
     return glm::dvec2{ _random.get_double(-0.5, 0.5), _random.get_double(-0.5, 0.5) };
+}
+
+auto SoftwareRenderer::create_viewport(usize image_width, usize image_height) -> Viewport
+{
+    const auto aspect_ratio = static_cast<double>(image_width) / static_cast<double>(image_height);
+
+    const auto viewport_height = 2.0;
+    const auto viewport_width = aspect_ratio * viewport_height;
+
+    return Viewport{
+        .width = viewport_width,
+        .height = viewport_height,
+    };
 }
 
 auto SoftwareRenderer::gamma_correction(glm::vec3 linear_space_color) -> glm::vec3

@@ -25,6 +25,7 @@
 #include "gl.hpp"
 #include "log.hpp"
 #include "render_worker.hpp"
+#include "ui.hpp"
 
 namespace presenter {
 
@@ -150,6 +151,42 @@ const auto world = std::array<std::shared_ptr<const tracer::Object>, 2>{
     std::make_shared<tracer::Sphere>(glm::dvec3{ 0.0, -100.5, -1.0 }, 100.0)
 };
 
+// Returns true if a restart of the render job is needed.
+[[nodiscard]] auto tracer_ui(const RenderWorker& render_worker, tracer::Camera& camera,
+                             tracer::RenderParams& render_params) -> bool
+{
+    auto restart = false;
+
+    ImGui::Begin("Path Tracer");
+
+    ImGui::ProgressBar(static_cast<float>(render_worker.progress()) / 100.0f);
+    auto render_time_ms = render_worker.time_ms();
+    auto render_time_s = render_time_ms / 1000.0;
+    ImGui::Text("Took %.4fs (%.4fms)", render_time_s, render_time_ms);
+
+    restart |= ImGui::Button("Generate");
+
+    if (ImGui::Button("Save"))
+    {
+        auto& image = render_worker.image();
+        write_image("image.png", image.pixels(), image.width(), image.height());
+    }
+
+    ImGui::SeparatorText("Camera");
+
+    restart |= ui::drag("Position", camera.position, 0.1f);
+    restart |= ui::drag("Focal Length", camera.focal_length, 0.1f);
+
+    ImGui::SeparatorText("Render Params");
+
+    restart |= ui::input_usize("Samples", render_params.samples);
+    restart |= ui::input_usize("Max Depth", render_params.max_depth);
+
+    ImGui::End();
+
+    return restart;
+}
+
 auto run() -> int
 {
     // There's a bug in VS runtime that can cause the application to deadlock when it exits when using asynchronous
@@ -237,12 +274,15 @@ auto run() -> int
         ImGui::DestroyContext();
     } };
 
+    auto camera = tracer::Camera{};
+    auto render_params = tracer::RenderParams{};
+
+    auto render_worker = RenderWorker{ image_width, image_height, world, camera, render_params };
+
     auto image_vertex_array = gl::VertexArray{};
     auto image_shader = gl::Shader{ vertex_shader_source, fragment_shader_source };
     auto image_texture = gl::Texture{ image_width, image_height };
     image_texture.clear();
-
-    auto render_worker = RenderWorker{ image_width, image_height, world };
 
     image_vertex_array.bind();
     image_shader.bind();
@@ -259,25 +299,8 @@ auto run() -> int
         if (render_status == RenderStatus::InProgress || render_status == RenderStatus::JustCompleted)
             image_texture.upload(render_worker.image().pixels());
 
-        {
-            ImGui::Begin("Path Tracer");
-
-            ImGui::ProgressBar(static_cast<float>(render_worker.progress()) / 100.0f);
-            auto render_time_ms = render_worker.time_ms();
-            auto render_time_s = render_time_ms / 1000.0;
-            ImGui::Text("Took %.4fs (%.4fms)", render_time_s, render_time_ms);
-
-            if (ImGui::Button("Generate"))
-                render_worker.restart();
-
-            if (ImGui::Button("Save"))
-            {
-                auto& image = render_worker.image();
-                write_image("image.png", image.pixels(), image.width(), image.height());
-            }
-
-            ImGui::End();
-        }
+        if (tracer_ui(render_worker, camera, render_params))
+            render_worker.restart(world, camera, render_params);
 
         glClear(GL_COLOR_BUFFER_BIT);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);

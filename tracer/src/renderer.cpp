@@ -35,11 +35,10 @@ auto Image::pixels() const -> std::span<const glm::vec4>
     return std::span{ _pixels.get(), _width * _height };
 }
 
-auto render(const ImageView<glm::vec4>& image, ObjectView world, const Camera& camera,
+auto render(const ImageView<glm::vec4>& image, ObjectSpan world, const Camera& camera,
             const RenderParams& render_params, std::stop_token stop_token, volatile i32* progress) -> void
 {
-    auto renderer = SoftwareRenderer{ image, camera, render_params };
-    renderer.render(world, std::move(stop_token), progress);
+    SoftwareRenderer{ image, world, camera, render_params }.render(std::move(stop_token), progress);
 }
 
 } // namespace tracer

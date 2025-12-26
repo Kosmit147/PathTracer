@@ -14,7 +14,7 @@
 
 namespace tracer {
 
-using ObjectView = std::span<const std::shared_ptr<const Object>>;
+using ObjectSpan = std::span<const std::shared_ptr<const Object>>;
 template<typename PixelType> class ImageView;
 
 class Image
@@ -79,11 +79,10 @@ class Renderer
 public:
     virtual ~Renderer() = default;
 
-    virtual auto render(ObjectView world, std::stop_token stop_token = std::stop_token{},
-                        volatile i32* progress = nullptr) -> void = 0;
+    virtual auto render(std::stop_token stop_token = std::stop_token{}, volatile i32* progress = nullptr) -> void = 0;
 };
 
-auto render(const ImageView<glm::vec4>& image, ObjectView world, const Camera& camera = {},
+auto render(const ImageView<glm::vec4>& image, ObjectSpan world, const Camera& camera = {},
             const RenderParams& render_params = {}, std::stop_token stop_token = std::stop_token{},
             volatile i32* progress = nullptr) -> void;
 

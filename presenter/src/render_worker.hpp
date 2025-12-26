@@ -20,7 +20,8 @@ enum class RenderStatus : u8
 class RenderWorker
 {
 public:
-    explicit RenderWorker(usize image_width, usize image_height, tracer::ObjectView world);
+    explicit RenderWorker(usize image_width, usize image_height, tracer::ObjectSpan world, const tracer::Camera& camera,
+                          const tracer::RenderParams& render_params);
     ~RenderWorker();
 
     RenderWorker(const RenderWorker&) = delete;
@@ -29,7 +30,8 @@ public:
     auto operator=(RenderWorker&&) = delete;
 
     auto stop() -> void;
-    auto restart() -> void;
+    auto restart(tracer::ObjectSpan world, const tracer::Camera& camera, const tracer::RenderParams& render_params)
+        -> void;
 
     [[nodiscard]] auto poll_status() -> RenderStatus;
     [[nodiscard]] auto time_ms() const -> double;
@@ -39,7 +41,6 @@ public:
 
 private:
     tracer::Image _image;
-    tracer::ObjectView _world;
     std::future<double> _result;
     std::stop_source _stop_source;
     double _time_ms{ 0.0 };

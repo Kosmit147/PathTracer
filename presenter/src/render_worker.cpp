@@ -15,21 +15,23 @@ namespace presenter {
 
 namespace {
 
-auto timed_render(const tracer::ImageView<glm::vec4>& image, tracer::ObjectView world, std::stop_token stop_token,
-                  volatile i32* progress) -> double
+auto timed_render(const tracer::ImageView<glm::vec4>& image, tracer::ObjectSpan world, const tracer::Camera& camera,
+                  const tracer::RenderParams& render_params, std::stop_token stop_token, volatile i32* progress)
+    -> double
 {
-    Timer timer{};
+    auto timer = Timer{};
     timer.start();
-    tracer::render(image, world, tracer::Camera{}, tracer::RenderParams{}, std::move(stop_token), progress);
+    tracer::render(image, world, camera, render_params, std::move(stop_token), progress);
     return timer.elapsed_ms();
 }
 
 } // namespace
 
-RenderWorker::RenderWorker(usize image_width, usize image_height, tracer::ObjectView world)
-    : _image{ image_width, image_height }, _world{ world }
+RenderWorker::RenderWorker(usize image_width, usize image_height, tracer::ObjectSpan world,
+                           const tracer::Camera& camera, const tracer::RenderParams& render_params)
+    : _image{ image_width, image_height }
 {
-    restart();
+    restart(world, camera, render_params);
 }
 
 RenderWorker::~RenderWorker()
@@ -47,12 +49,13 @@ auto RenderWorker::stop() -> void
     _stop_source = std::stop_source{};
 }
 
-auto RenderWorker::restart() -> void
+auto RenderWorker::restart(tracer::ObjectSpan world, const tracer::Camera& camera,
+                           const tracer::RenderParams& render_params) -> void
 {
     stop();
 
-    _result =
-        std::async(std::launch::async, timed_render, _image.view(), _world, _stop_source.get_token(), _progress.get());
+    _result = std::async(std::launch::async, timed_render, _image.view(), world, camera, render_params,
+                         _stop_source.get_token(), _progress.get());
 
     _time_ms = 0.0;
 }

@@ -22,6 +22,7 @@ target_sources(
             src/log.hpp
             src/render_worker.hpp
             src/timer.hpp
+            src/ui.hpp
 )
 
 target_compile_features(presenter PRIVATE cxx_std_23)
