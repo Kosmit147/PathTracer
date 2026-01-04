@@ -6,6 +6,7 @@
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 #include <imgui.h>
+#include <portable-file-dialogs.h>
 #include <spdlog/spdlog.h>
 #include <stb_image_write.h>
 #include <tracer/object.hpp>
@@ -14,6 +15,7 @@
 #include <array>
 #include <chrono>
 #include <cstdlib>
+#include <filesystem>
 #include <memory>
 #include <span>
 #include <string>
@@ -76,8 +78,7 @@ auto gl_debug_message_callback([[maybe_unused]] GLenum source, [[maybe_unused]] 
     return glm::vec<4, u8>{ r, g, b, a };
 }
 
-auto write_image(const std::string& path, std::span<const glm::vec4> image, usize image_width, usize image_height)
-    -> bool
+auto write_png(const std::string& path, std::span<const glm::vec4> image, usize image_width, usize image_height) -> bool
 {
     auto image_rgba8 = std::vector<glm::vec<4, u8>>{};
     image_rgba8.resize(image.size());
@@ -165,8 +166,11 @@ const auto world = std::array<std::shared_ptr<const tracer::Object>, 2>{
 
     if (ImGui::Button("Save"))
     {
+        auto path =
+            std::filesystem::path{ pfd::save_file{ "Save Image", "image.png", { "PNG Files", "*.png" } }.result() };
+        path.replace_extension("png");
         auto& image = render_worker.image();
-        write_image("image.png", image.pixels(), image.width(), image.height());
+        write_png(path.string(), image.pixels(), image.width(), image.height());
     }
 
     restart |= ui::input_u32("Width", image_width);
