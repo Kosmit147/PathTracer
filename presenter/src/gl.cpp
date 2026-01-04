@@ -22,12 +22,30 @@ VertexArray::VertexArray()
 
 VertexArray::~VertexArray()
 {
-    glDeleteVertexArrays(1, &_vertex_array_id);
+    destroy();
+}
+
+VertexArray::VertexArray(VertexArray&& other) noexcept
+    : _vertex_array_id{ std::exchange(other._vertex_array_id, GL_NONE) }
+{}
+
+auto VertexArray::operator=(VertexArray&& other) noexcept -> VertexArray&
+{
+    destroy();
+
+    _vertex_array_id = std::exchange(other._vertex_array_id, GL_NONE);
+
+    return *this;
 }
 
 auto VertexArray::bind() const -> void
 {
     glBindVertexArray(_vertex_array_id);
+}
+
+auto VertexArray::destroy() -> void
+{
+    glDeleteVertexArrays(1, &_vertex_array_id);
 }
 
 Shader::Shader(const std::string& vertex_source, const std::string& fragment_source)
@@ -65,12 +83,28 @@ Shader::Shader(const std::string& vertex_source, const std::string& fragment_sou
 
 Shader::~Shader()
 {
-    glDeleteProgram(_program_id);
+    destroy();
+}
+
+Shader::Shader(Shader&& other) noexcept : _program_id{ std::exchange(other._program_id, GL_NONE) } {}
+
+auto Shader::operator=(Shader&& other) noexcept -> Shader&
+{
+    destroy();
+
+    _program_id = std::exchange(other._program_id, GL_NONE);
+
+    return *this;
 }
 
 auto Shader::bind() const -> void
 {
     glUseProgram(_program_id);
+}
+
+auto Shader::destroy() -> void
+{
+    glDeleteProgram(_program_id);
 }
 
 Texture::Texture(u32 width, u32 height)

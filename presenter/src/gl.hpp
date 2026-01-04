@@ -18,13 +18,17 @@ public:
 
     VertexArray(const VertexArray&) = delete;
     auto operator=(const VertexArray&) = delete;
-    VertexArray(VertexArray&&) = delete;
-    auto operator=(VertexArray&&) = delete;
+
+    VertexArray(VertexArray&& other) noexcept;
+    auto operator=(VertexArray&& other) noexcept -> VertexArray&;
 
     auto bind() const -> void;
 
 private:
     GLuint _vertex_array_id = GL_NONE;
+
+private:
+    auto destroy() -> void;
 };
 
 class Shader
@@ -35,13 +39,17 @@ public:
 
     Shader(const Shader&) = delete;
     auto operator=(const Shader&) = delete;
-    Shader(Shader&&) = delete;
-    auto operator=(Shader&&) = delete;
+
+    Shader(Shader&& other) noexcept;
+    auto operator=(Shader&& other) noexcept -> Shader&;
 
     auto bind() const -> void;
 
 private:
     GLuint _program_id = GL_NONE;
+
+private:
+    auto destroy() -> void;
 };
 
 class Texture
