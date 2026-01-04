@@ -12,8 +12,19 @@
 namespace tracer {
 
 Image::Image(usize width, usize height)
-    : _width{ width }, _height{ height }, _pixels{ std::make_unique<glm::vec4[]>(_width * _height) }
-{}
+{
+    resize(width, height);
+}
+
+auto Image::resize(usize width, usize height) -> void
+{
+    if (width == _width && height == _height)
+        return;
+
+    _width = width;
+    _height = height;
+    _pixels = std::make_unique<glm::vec4[]>(_width * _height);
+}
 
 auto Image::view() -> ImageView<glm::vec4>
 {

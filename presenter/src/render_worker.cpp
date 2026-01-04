@@ -29,9 +29,8 @@ auto timed_render(const tracer::ImageView<glm::vec4>& image, tracer::ObjectSpan 
 
 RenderWorker::RenderWorker(usize image_width, usize image_height, tracer::ObjectSpan world,
                            const tracer::Camera& camera, const tracer::RenderParams& render_params)
-    : _image{ image_width, image_height }
 {
-    restart(world, camera, render_params);
+    restart(image_width, image_height, world, camera, render_params);
 }
 
 RenderWorker::~RenderWorker()
@@ -49,11 +48,12 @@ auto RenderWorker::stop() -> void
     _stop_source = std::stop_source{};
 }
 
-auto RenderWorker::restart(tracer::ObjectSpan world, const tracer::Camera& camera,
-                           const tracer::RenderParams& render_params) -> void
+auto RenderWorker::restart(usize image_width, usize image_height, tracer::ObjectSpan world,
+                           const tracer::Camera& camera, const tracer::RenderParams& render_params) -> void
 {
     stop();
 
+    _image.resize(image_width, image_height);
     _result = std::async(std::launch::async, timed_render, _image.view(), world, camera, render_params,
                          _stop_source.get_token(), _progress.get());
 

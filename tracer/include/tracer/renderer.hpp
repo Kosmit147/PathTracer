@@ -20,7 +20,10 @@ template<typename PixelType> class ImageView;
 class Image
 {
 public:
+    explicit Image() = default;
     explicit Image(usize width, usize height);
+
+    auto resize(usize width, usize height) -> void;
 
     [[nodiscard]] auto width() const -> auto { return _width; }
     [[nodiscard]] auto height() const -> auto { return _height; }

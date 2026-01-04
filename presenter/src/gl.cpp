@@ -7,6 +7,7 @@
 #include <array>
 #include <span>
 #include <string>
+#include <utility>
 
 #include "assert.hpp"
 #include "common.hpp"
@@ -91,7 +92,23 @@ Texture::Texture(u32 width, u32 height)
 
 Texture::~Texture()
 {
-    glDeleteTextures(1, &_texture_id);
+    destroy();
+}
+
+Texture::Texture(Texture&& other) noexcept
+    : _texture_id{ std::exchange(other._texture_id, GL_NONE) }, _width{ std::exchange(other._width, 0) },
+      _height{ std::exchange(other._height, 0) }
+{}
+
+auto Texture::operator=(Texture&& other) noexcept -> Texture&
+{
+    destroy();
+
+    _texture_id = std::exchange(other._texture_id, GL_NONE);
+    _width = std::exchange(other._width, 0);
+    _height = std::exchange(other._height, 0);
+
+    return *this;
 }
 
 auto Texture::bind(u32 slot) const -> void
@@ -113,6 +130,11 @@ auto Texture::clear() -> void
 {
     constexpr static auto black = glm::vec4{ 0.0f, 0.0f, 0.0f, 1.0f };
     glClearTexImage(_texture_id, 0, GL_RGBA, GL_FLOAT, glm::value_ptr(black));
+}
+
+auto Texture::destroy() -> void
+{
+    glDeleteTextures(1, &_texture_id);
 }
 
 } // namespace presenter::gl

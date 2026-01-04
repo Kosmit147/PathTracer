@@ -52,8 +52,9 @@ public:
 
     Texture(const Texture&) = delete;
     auto operator=(const Texture&) = delete;
-    Texture(Texture&&) = delete;
-    auto operator=(Texture&&) = delete;
+
+    Texture(Texture&& other) noexcept;
+    auto operator=(Texture&& other) noexcept -> Texture&;
 
     auto bind(u32 slot) const -> void;
     auto upload(std::span<const glm::vec4> pixels) -> void;
@@ -66,6 +67,9 @@ private:
     GLuint _texture_id = GL_NONE;
     u32 _width = 0;
     u32 _height = 0;
+
+private:
+    auto destroy() -> void;
 };
 
 } // namespace presenter::gl

@@ -63,4 +63,12 @@ inline auto input_usize(const char* label, usize& v, usize step = 1, usize step_
                               step_fast > 0 ? &step_fast : nullptr, "%zu", flags);
 }
 
+inline auto input_u32(const char* label, u32& v, u32 step = 1, u32 step_fast = 100, ImGuiInputTextFlags flags = 0)
+    -> bool
+{
+    static_assert(std::is_same_v<u32, unsigned int>);
+    return ImGui::InputScalar(label, ImGuiDataType_U32, &v, step > 0 ? &step : nullptr,
+                              step_fast > 0 ? &step_fast : nullptr, "%u", flags);
+}
+
 } // namespace presenter::ui

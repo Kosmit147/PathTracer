@@ -30,8 +30,8 @@ public:
     auto operator=(RenderWorker&&) = delete;
 
     auto stop() -> void;
-    auto restart(tracer::ObjectSpan world, const tracer::Camera& camera, const tracer::RenderParams& render_params)
-        -> void;
+    auto restart(usize image_width, usize image_height, tracer::ObjectSpan world, const tracer::Camera& camera,
+                 const tracer::RenderParams& render_params) -> void;
 
     [[nodiscard]] auto poll_status() -> RenderStatus;
     [[nodiscard]] auto time_ms() const -> double;

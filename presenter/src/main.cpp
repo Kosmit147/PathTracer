@@ -140,9 +140,6 @@ void main()
 })"
 };
 
-constexpr u32 image_width = 640;
-constexpr u32 image_height = 360;
-
 constexpr u32 window_width = 1920;
 constexpr u32 window_height = 1080;
 
@@ -153,7 +150,7 @@ const auto world = std::array<std::shared_ptr<const tracer::Object>, 2>{
 
 // Returns true if a restart of the render job is needed.
 [[nodiscard]] auto tracer_ui(const RenderWorker& render_worker, tracer::Camera& camera,
-                             tracer::RenderParams& render_params) -> bool
+                             tracer::RenderParams& render_params, u32& image_width, u32& image_height) -> bool
 {
     auto restart = false;
 
@@ -171,6 +168,9 @@ const auto world = std::array<std::shared_ptr<const tracer::Object>, 2>{
         auto& image = render_worker.image();
         write_image("image.png", image.pixels(), image.width(), image.height());
     }
+
+    restart |= ui::input_u32("Width", image_width);
+    restart |= ui::input_u32("Height", image_height);
 
     ImGui::SeparatorText("Camera");
 
@@ -276,6 +276,8 @@ auto run() -> int
 
     auto camera = tracer::Camera{};
     auto render_params = tracer::RenderParams{};
+    u32 image_width = 640;
+    u32 image_height = 360;
 
     auto render_worker = RenderWorker{ image_width, image_height, world, camera, render_params };
 
@@ -283,10 +285,6 @@ auto run() -> int
     auto image_shader = gl::Shader{ vertex_shader_source, fragment_shader_source };
     auto image_texture = gl::Texture{ image_width, image_height };
     image_texture.clear();
-
-    image_vertex_array.bind();
-    image_shader.bind();
-    image_texture.bind(0);
 
     while (!glfwWindowShouldClose(window))
     {
@@ -299,10 +297,21 @@ auto run() -> int
         if (render_status == RenderStatus::InProgress || render_status == RenderStatus::JustCompleted)
             image_texture.upload(render_worker.image().pixels());
 
-        if (tracer_ui(render_worker, camera, render_params))
-            render_worker.restart(world, camera, render_params);
+        if (tracer_ui(render_worker, camera, render_params, image_width, image_height))
+        {
+            if (image_width != image_texture.width() || image_height != image_texture.height())
+            {
+                image_texture = gl::Texture{ image_width, image_height };
+                image_texture.clear();
+            }
+
+            render_worker.restart(image_width, image_height, world, camera, render_params);
+        }
 
         glClear(GL_COLOR_BUFFER_BIT);
+        image_vertex_array.bind();
+        image_shader.bind();
+        image_texture.bind(0);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
         ImGui::Render();
