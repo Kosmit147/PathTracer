@@ -19,3 +19,6 @@
 [submodule "libs/pcg-cpp/pcg-cpp"]
 	path = libs/pcg-cpp/pcg-cpp
 	url = https://github.com/imneme/pcg-cpp
+[submodule "libs/portable-file-dialogs"]
+	path = libs/portable-file-dialogs
+	url = https://github.com/Kosmit147/portable-file-dialogs.git
