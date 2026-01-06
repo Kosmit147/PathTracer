@@ -9,6 +9,8 @@
 #include <portable-file-dialogs.h>
 #include <spdlog/spdlog.h>
 #include <stb_image_write.h>
+#include <tracer/defer.hpp>
+#include <tracer/gl.hpp>
 #include <tracer/object.hpp>
 #include <tracer/renderer.hpp>
 
@@ -23,8 +25,6 @@
 
 #include "assert.hpp"
 #include "common.hpp"
-#include "defer.hpp"
-#include "gl.hpp"
 #include "log.hpp"
 #include "render_worker.hpp"
 #include "ui.hpp"
@@ -195,7 +195,7 @@ auto run() -> int
 {
     // There's a bug in VS runtime that can cause the application to deadlock when it exits when using asynchronous
     // loggers. Calling spdlog::shutdown() prevents that.
-    Defer shutdown_spdlog{ [] { spdlog::shutdown(); } };
+    tracer::Defer shutdown_spdlog{ [] { spdlog::shutdown(); } };
 
     glfwSetErrorCallback(glfw_error_callback);
 
@@ -205,7 +205,7 @@ auto run() -> int
         return EXIT_FAILURE;
     }
 
-    Defer terminate_glfw{ [] { glfwTerminate(); } };
+    tracer::Defer terminate_glfw{ [] { glfwTerminate(); } };
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
@@ -223,7 +223,7 @@ auto run() -> int
         return EXIT_FAILURE;
     }
 
-    Defer destroy_window{ [&] { glfwDestroyWindow(window); } };
+    tracer::Defer destroy_window{ [&] { glfwDestroyWindow(window); } };
 
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1);
@@ -272,7 +272,7 @@ auto run() -> int
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init();
 
-    Defer shut_down_imgui{ [] {
+    tracer::Defer shut_down_imgui{ [] {
         ImGui_ImplOpenGL3_Shutdown();
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
@@ -285,9 +285,9 @@ auto run() -> int
 
     auto render_worker = RenderWorker{ image_width, image_height, world, camera, render_params };
 
-    auto image_vertex_array = gl::VertexArray{};
-    auto image_shader = gl::Shader{ vertex_shader_source, fragment_shader_source };
-    auto image_texture = gl::Texture{ image_width, image_height };
+    auto image_vertex_array = tracer::gl::VertexArray{};
+    auto image_shader = tracer::gl::Shader{ vertex_shader_source, fragment_shader_source };
+    auto image_texture = tracer::gl::Texture{ image_width, image_height };
     image_texture.clear();
 
     while (!glfwWindowShouldClose(window))
@@ -305,7 +305,7 @@ auto run() -> int
         {
             if (image_width != image_texture.width() || image_height != image_texture.height())
             {
-                image_texture = gl::Texture{ image_width, image_height };
+                image_texture = tracer::gl::Texture{ image_width, image_height };
                 image_texture.clear();
             }
 

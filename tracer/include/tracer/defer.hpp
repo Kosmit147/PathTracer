@@ -4,7 +4,7 @@
 #include <functional>
 #include <utility>
 
-namespace presenter {
+namespace tracer {
 
 template<std::regular_invocable F> class Defer
 {
@@ -29,4 +29,4 @@ private:
     bool _dismissed{ false };
 };
 
-} // namespace presenter
+} // namespace tracer

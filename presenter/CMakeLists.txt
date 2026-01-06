@@ -6,7 +6,6 @@ target_sources(
     presenter
 
     PRIVATE
-        src/gl.cpp
         src/main.cpp
         src/render_worker.cpp
 
@@ -17,8 +16,6 @@ target_sources(
         FILES
             src/assert.hpp
             src/common.hpp
-            src/defer.hpp
-            src/gl.hpp
             src/log.hpp
             src/render_worker.hpp
             src/timer.hpp

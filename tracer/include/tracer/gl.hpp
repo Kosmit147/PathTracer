@@ -6,9 +6,9 @@
 #include <span>
 #include <string>
 
-#include "common.hpp"
+#include "tracer/common.hpp"
 
-namespace presenter::gl {
+namespace tracer::gl {
 
 class VertexArray
 {
@@ -80,4 +80,4 @@ private:
     auto destroy() -> void;
 };
 
-} // namespace presenter::gl
+} // namespace tracer::gl

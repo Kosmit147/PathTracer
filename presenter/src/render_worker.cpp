@@ -19,7 +19,7 @@ auto timed_render(const tracer::ImageView<glm::vec4>& image, tracer::ObjectSpan 
                   const tracer::RenderParams& render_params, std::stop_token stop_token, volatile i32* progress)
     -> double
 {
-    auto timer = Timer{};
+    auto timer = HighResolutionTimer{};
     timer.start();
     tracer::render(image, world, camera, render_params, std::move(stop_token), progress);
     return timer.elapsed_ms();

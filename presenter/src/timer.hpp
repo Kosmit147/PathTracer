@@ -6,7 +6,7 @@
 
 namespace presenter {
 
-class Timer
+class HighResolutionTimer
 {
 public:
     auto start() -> void { _start = std::chrono::high_resolution_clock::now(); }

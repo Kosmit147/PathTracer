@@ -1,4 +1,4 @@
-#include "gl.hpp"
+#include "tracer/gl.hpp"
 
 #include <glad/glad.h>
 #include <glm/gtc/type_ptr.hpp>
@@ -9,11 +9,11 @@
 #include <string>
 #include <utility>
 
-#include "assert.hpp"
-#include "common.hpp"
-#include "defer.hpp"
+#include "tracer/assert.hpp"
+#include "tracer/common.hpp"
+#include "tracer/defer.hpp"
 
-namespace presenter::gl {
+namespace tracer::gl {
 
 VertexArray::VertexArray()
 {
@@ -56,7 +56,7 @@ Shader::Shader(const std::string& vertex_source, const std::string& fragment_sou
     glCompileShader(vertex_shader);
     GLint vertex_shader_is_compiled;
     glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &vertex_shader_is_compiled);
-    PRESENTER_ASSERT(vertex_shader_is_compiled == GL_TRUE);
+    TRACER_ASSERT(vertex_shader_is_compiled == GL_TRUE);
     Defer delete_vertex_shader{ [&] { glDeleteShader(vertex_shader); } };
 
     auto fragment_shader_sources = std::array<const GLchar*, 1>{ fragment_source.c_str() };
@@ -65,7 +65,7 @@ Shader::Shader(const std::string& vertex_source, const std::string& fragment_sou
     glCompileShader(fragment_shader);
     GLint fragment_shader_is_compiled;
     glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &fragment_shader_is_compiled);
-    PRESENTER_ASSERT(fragment_shader_is_compiled == GL_TRUE);
+    TRACER_ASSERT(fragment_shader_is_compiled == GL_TRUE);
     Defer delete_fragment_shader{ [&] { glDeleteShader(fragment_shader); } };
 
     GLuint program = glCreateProgram();
@@ -76,7 +76,7 @@ Shader::Shader(const std::string& vertex_source, const std::string& fragment_sou
     glLinkProgram(program);
     GLint program_is_linked;
     glGetProgramiv(program, GL_LINK_STATUS, &program_is_linked);
-    PRESENTER_ASSERT(program_is_linked == GL_TRUE);
+    TRACER_ASSERT(program_is_linked == GL_TRUE);
 
     _program_id = program;
 }
@@ -152,9 +152,9 @@ auto Texture::bind(u32 slot) const -> void
 
 auto Texture::upload(std::span<const glm::vec4> pixels) -> void
 {
-    PRESENTER_ASSERT(pixels.size() == static_cast<usize>(_width) * static_cast<usize>(_height));
-    PRESENTER_ASSERT(pixels.size_bytes()
-                     == static_cast<usize>(_width) * static_cast<usize>(_height) * sizeof(GLfloat) * 4);
+    TRACER_ASSERT(pixels.size() == static_cast<usize>(_width) * static_cast<usize>(_height));
+    TRACER_ASSERT(pixels.size_bytes()
+                  == static_cast<usize>(_width) * static_cast<usize>(_height) * sizeof(GLfloat) * 4);
 
     glTextureSubImage2D(_texture_id, 0, 0, 0, static_cast<GLsizei>(_width), static_cast<GLsizei>(_height), GL_RGBA,
                         GL_FLOAT, pixels.data());
@@ -171,4 +171,4 @@ auto Texture::destroy() -> void
     glDeleteTextures(1, &_texture_id);
 }
 
-} // namespace presenter::gl
+} // namespace tracer::gl

@@ -6,6 +6,7 @@ target_sources(
     tracer
 
     PRIVATE
+        src/gl.cpp
         src/object.cpp
         src/random.cpp
         src/renderer.cpp
@@ -18,7 +19,9 @@ target_sources(
         FILES
             include/tracer/assert.hpp
             include/tracer/common.hpp
+            include/tracer/defer.hpp
             include/tracer/geometric.hpp
+            include/tracer/gl.hpp
             include/tracer/numeric.hpp
             include/tracer/object.hpp
             include/tracer/random.hpp
@@ -43,6 +46,7 @@ if(PT_DEBUG_BREAKS)
     target_compile_definitions(tracer PUBLIC PT_DEBUG_BREAKS)
 endif()
 
+target_link_libraries(tracer PUBLIC glad::glad)
 target_link_libraries(tracer PUBLIC glm::glm)
 target_link_libraries(tracer PUBLIC PathTracer::pcg)
 
